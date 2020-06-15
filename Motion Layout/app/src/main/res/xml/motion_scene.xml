@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<MotionScene xmlns:android="http://schemas.android.com/apk/res/android">
+
+  <ConstraintSet android:id="@+id/start">
+
+    <Constraint
+      android:id="@+id/laserFire"
+      android:layout_width="@dimen/laser_width"
+      android:layout_height="@dimen/laser_height"
+      />
+  </ConstraintSet>
+
+
+</MotionScene>
