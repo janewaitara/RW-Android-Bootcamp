@@ -13,22 +13,22 @@ import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
 
-    lateinit var todoListRecyclerView: RecyclerView
+    private lateinit var todoListRecyclerView: RecyclerView
+
+    val listDataManager: ListDataManager = ListDataManager(this)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
 
+        val lists = listDataManager.readLists()
         todoListRecyclerView = findViewById(R.id.list_recyclerview)
         todoListRecyclerView.layoutManager = LinearLayoutManager(this) //knowing about layout when placing items
-        todoListRecyclerView.adapter = TodoListAdapter()
+        todoListRecyclerView.adapter = TodoListAdapter(lists)
 
         fab.setOnClickListener { _  ->
-
             showCreateTodoListDialog()
-            /*val adapter = todoListRecyclerView.adapter as TodoListAdapter
-            adapter.addNewItem()*/
         }
     }
 
@@ -59,6 +59,11 @@ class MainActivity : AppCompatActivity() {
         myDialog.setView(todoTitleEditText)
         myDialog.setPositiveButton(positiveButtonTitle){
             dialog, _ ->  //takes a dialog and an int to know which button was tapped
+
+            val adapter = todoListRecyclerView.adapter as TodoListAdapter
+            val list = TaskList(todoTitleEditText.text.toString())
+            listDataManager.saveList(list)
+            adapter.addList(list)
 
             dialog.dismiss()
         }
