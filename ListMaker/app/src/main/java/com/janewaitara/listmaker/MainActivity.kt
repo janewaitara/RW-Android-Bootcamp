@@ -12,7 +12,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.activity_main.*
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), TodoListAdapter.TodoListClickListener {
 
     private lateinit var todoListRecyclerView: RecyclerView
 
@@ -30,7 +30,7 @@ class MainActivity : AppCompatActivity() {
         val lists = listDataManager.readLists()
         todoListRecyclerView = findViewById(R.id.list_recyclerview)
         todoListRecyclerView.layoutManager = LinearLayoutManager(this) //knowing about layout when placing items
-        todoListRecyclerView.adapter = TodoListAdapter(lists)
+        todoListRecyclerView.adapter = TodoListAdapter(lists, this)
 
         fab.setOnClickListener { _  ->
             showCreateTodoListDialog()
@@ -71,6 +71,7 @@ class MainActivity : AppCompatActivity() {
             adapter.addList(list)
 
             dialog.dismiss()
+            showTaskListItems(list)
         }
         myDialog.create().show()
 
@@ -80,6 +81,10 @@ class MainActivity : AppCompatActivity() {
         val taskListItem = Intent(this, DetailActivity::class.java)
         taskListItem.putExtra(INTENT_LIST_KEY,list)
         startActivity(taskListItem)
+    }
+
+    override fun listItemClicked(list: TaskList) {
+        showTaskListItems(list)
     }
 
 }
