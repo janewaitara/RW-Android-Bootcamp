@@ -13,7 +13,7 @@ class TodoListAdapter(private val lists: ArrayList<TaskList>, private val clickL
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TodoListViewHolder {
         //create new View Holder
         val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.todo_list_view_holder, parent,false) // dont want to automatically attach it ,RV will do that
+            .inflate(R.layout.todo_list_view_holder, parent,false) // don't want to automatically attach it ,RV will do that
         return TodoListViewHolder(view)
 
     }
@@ -24,7 +24,7 @@ class TodoListAdapter(private val lists: ArrayList<TaskList>, private val clickL
     }
 
     override fun onBindViewHolder(holder: TodoListViewHolder, position: Int) {
-        //Customizes the view
+        //Customizes the each row according to your data, called for each row in the list
         holder.listPositionTextView.text = (position + 1).toString()
         holder.listTitleTextView.text = lists[position].name
         holder.itemView.setOnClickListener {

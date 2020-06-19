@@ -20,7 +20,7 @@ class MainActivity : AppCompatActivity(), TodoListAdapter.TodoListClickListener 
 
     companion object{
         const val INTENT_LIST_KEY = "list"
-        const val LIST_DETAIL_REQUEST_CODE = 123
+        const val LIST_DETAIL_REQUEST_CODE = 123 //used in startActivityResult as an identifier for that activity being started to help get the result back
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -31,7 +31,7 @@ class MainActivity : AppCompatActivity(), TodoListAdapter.TodoListClickListener 
         val lists = listDataManager.readLists()
         todoListRecyclerView = findViewById(R.id.list_recyclerview)
         todoListRecyclerView.layoutManager = LinearLayoutManager(this) //knowing about layout when placing items
-        todoListRecyclerView.adapter = TodoListAdapter(lists, this)
+        todoListRecyclerView.adapter = TodoListAdapter(lists, this) //passing the list read from the manager
 
         fab.setOnClickListener { _  ->
             showCreateTodoListDialog()
@@ -44,14 +44,14 @@ class MainActivity : AppCompatActivity(), TodoListAdapter.TodoListClickListener 
         return true
     }
 
-    //called for every activity that returns a result
+    //called for every activity launched and returns a result
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
         if (requestCode == LIST_DETAIL_REQUEST_CODE){
-            data?.let {
-                val list = data.getParcelableExtra<TaskList>(INTENT_LIST_KEY)
-                listDataManager.saveList(list)
+            data?.let { //check if there is data and unpack it
+                val list = data.getParcelableExtra<TaskList>(INTENT_LIST_KEY)!! //getting the data
+                listDataManager.saveList(list) //saving the list
                 updateList()
             }
         }
@@ -60,7 +60,7 @@ class MainActivity : AppCompatActivity(), TodoListAdapter.TodoListClickListener 
     private fun updateList() {
 
         val lists = listDataManager.readLists()
-        todoListRecyclerView.adapter = TodoListAdapter(lists, this)
+        todoListRecyclerView.adapter = TodoListAdapter(lists, this) //refreshing the RV
 
     }
 
@@ -88,8 +88,8 @@ class MainActivity : AppCompatActivity(), TodoListAdapter.TodoListClickListener 
 
             val adapter = todoListRecyclerView.adapter as TodoListAdapter
             val list = TaskList(todoTitleEditText.text.toString())
-            listDataManager.saveList(list)
-            adapter.addList(list)
+            listDataManager.saveList(list) //saving the list
+            adapter.addList(list) // updating the RecyclerView with the list
 
             dialog.dismiss()
             showTaskListItems(list)

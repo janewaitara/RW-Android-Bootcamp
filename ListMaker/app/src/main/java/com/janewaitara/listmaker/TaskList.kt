@@ -6,7 +6,7 @@ import android.os.Parcelable
 class TaskList(val name: String,
                val tasks: ArrayList<String> = ArrayList()): Parcelable {
 
-    constructor(parcel: Parcel) : this(
+    constructor(parcel: Parcel) : this( //calls the primary constructor
         parcel.readString()!!, //gets the name of the list and needs to be unwrapped
         parcel.createStringArrayList()!! //gets the list itself
     )
