@@ -12,11 +12,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.activity_main.*
 
-class MainActivity : AppCompatActivity(), TodoListAdapter.TodoListClickListener {
+class MainActivity : AppCompatActivity(), TodoListFragment.OnFragmentInteractionListener{
 
-    private lateinit var todoListRecyclerView: RecyclerView
-
-    private val listDataManager: ListDataManager = ListDataManager(this)
+    private var todoListFragment = TodoListFragment.newInstance()
 
     companion object{
         const val INTENT_LIST_KEY = "list"
@@ -28,10 +26,6 @@ class MainActivity : AppCompatActivity(), TodoListAdapter.TodoListClickListener 
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
 
-        val lists = listDataManager.readLists()
-        todoListRecyclerView = findViewById(R.id.list_recyclerview)
-        todoListRecyclerView.layoutManager = LinearLayoutManager(this) //knowing about layout when placing items
-        todoListRecyclerView.adapter = TodoListAdapter(lists, this) //passing the list read from the manager
 
         fab.setOnClickListener { _  ->
             showCreateTodoListDialog()
@@ -51,18 +45,12 @@ class MainActivity : AppCompatActivity(), TodoListAdapter.TodoListClickListener 
         if (requestCode == LIST_DETAIL_REQUEST_CODE){
             data?.let { //check if there is data and unpack it
                 val list = data.getParcelableExtra<TaskList>(INTENT_LIST_KEY)!! //getting the data
-                listDataManager.saveList(list) //saving the list
-                updateList()
+                todoListFragment.saveList(list) //saving the list
             }
         }
     }
 
-    private fun updateList() {
 
-        val lists = listDataManager.readLists()
-        todoListRecyclerView.adapter = TodoListAdapter(lists, this) //refreshing the RV
-
-    }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         // Handle action bar item clicks here. The action bar will
@@ -86,10 +74,11 @@ class MainActivity : AppCompatActivity(), TodoListAdapter.TodoListClickListener 
         myDialog.setPositiveButton(positiveButtonTitle){
             dialog, _ ->  //takes a dialog and an int to know which button was tapped
 
-            val adapter = todoListRecyclerView.adapter as TodoListAdapter
+       /*     val adapter = todoListRecyclerView.adapter as TodoListAdapter*/
             val list = TaskList(todoTitleEditText.text.toString())
-            listDataManager.saveList(list) //saving the list
-            adapter.addList(list) // updating the RecyclerView with the list
+       /*     listDataManager.saveList(list) //saving the list
+            adapter.addList(list) // updating the RecyclerView with the list*/
+            todoListFragment.addList(list)
 
             dialog.dismiss()
             showTaskListItems(list)
@@ -104,7 +93,7 @@ class MainActivity : AppCompatActivity(), TodoListAdapter.TodoListClickListener 
         startActivityForResult(taskListItem, LIST_DETAIL_REQUEST_CODE)
     }
 
-    override fun listItemClicked(list: TaskList) {
+    override fun onTodoListClicked(list: TaskList) {
         showTaskListItems(list)
     }
 
