@@ -11,6 +11,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
 import androidx.appcompat.app.AlertDialog
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.activity_main.*
@@ -49,7 +50,7 @@ class TodoListFragment : Fragment(),TodoListAdapter.TodoListClickListener {
         super.onViewCreated(view, savedInstanceState)
 
         activity?.let {
-            listDataManager = ListDataManager(it) //instantiating the DataManager
+            listDataManager = ViewModelProvider(this).get(ListDataManager::class.java) //instantiating the DataManager
         }
         val lists = listDataManager.readLists()
         todoListRecyclerView = view.findViewById(R.id.list_recyclerview)

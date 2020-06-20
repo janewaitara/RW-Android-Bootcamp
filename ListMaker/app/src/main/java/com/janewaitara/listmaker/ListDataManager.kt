@@ -1,9 +1,12 @@
 package com.janewaitara.listmaker
 
-import android.content.Context
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.preference.PreferenceManager
 
-class ListDataManager(private val context: Context) {
+class ListDataManager(application: Application) : AndroidViewModel(application){
+
+    private val context = application.applicationContext
 
     fun saveList(list: TaskList){
         val sharedPref = PreferenceManager.getDefaultSharedPreferences(context).edit()
@@ -18,7 +21,7 @@ class ListDataManager(private val context: Context) {
         val taskLists = ArrayList<TaskList>()
 
         for (taskList in content) {
-           val taskItems = ArrayList(taskList.value as HashSet<String>)   //get saved hashSet and convert it into an arrayList
+            val taskItems = ArrayList(taskList.value as HashSet<String>)   //get saved hashSet and convert it into an arrayList
             val list = TaskList(taskList.key,taskItems)//create a taskList from it
             taskLists.add(list)
         }
