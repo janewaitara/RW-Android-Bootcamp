@@ -51,6 +51,7 @@ class DetailActivity : AppCompatActivity() {
             .create().show()
     }
 
+    //results are sent to /Main through this method
     override fun onBackPressed() {
         val bundle = Bundle() //store things
         bundle.putParcelable(MainActivity.INTENT_LIST_KEY, list)

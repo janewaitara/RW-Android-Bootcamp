@@ -12,15 +12,13 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.activity_main.*
 
-class MainActivity : AppCompatActivity(), TodoListAdapter.TodoListClickListener {
+class MainActivity : AppCompatActivity(), TodoListFragment.OnFragmentInteractionListener{
 
-    private lateinit var todoListRecyclerView: RecyclerView
-
-    private val listDataManager: ListDataManager = ListDataManager(this)
+    private var todoListFragment = TodoListFragment.newInstance()
 
     companion object{
         const val INTENT_LIST_KEY = "list"
-        const val LIST_DETAIL_REQUEST_CODE = 123
+        const val LIST_DETAIL_REQUEST_CODE = 123 //used in startActivityResult as an identifier for that activity being started to help get the result back
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -28,40 +26,28 @@ class MainActivity : AppCompatActivity(), TodoListAdapter.TodoListClickListener 
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
 
-        val lists = listDataManager.readLists()
-        todoListRecyclerView = findViewById(R.id.list_recyclerview)
-        todoListRecyclerView.layoutManager = LinearLayoutManager(this) //knowing about layout when placing items
-        todoListRecyclerView.adapter = TodoListAdapter(lists, this)
 
         fab.setOnClickListener { _  ->
             showCreateTodoListDialog()
         }
+        
     }
-
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.menu_main, menu)
         return true
     }
 
-    //called for every activity that returns a result
+    //called for every activity launched and returns a result
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
         if (requestCode == LIST_DETAIL_REQUEST_CODE){
-            data?.let {
-                val list = data.getParcelableExtra<TaskList>(INTENT_LIST_KEY)
-                listDataManager.saveList(list)
-                updateList()
+            data?.let { //check if there is data and unpack it
+                val list = data.getParcelableExtra<TaskList>(INTENT_LIST_KEY)!! //getting the data
+                todoListFragment.saveList(list) //saving the list
             }
         }
-    }
-
-    private fun updateList() {
-
-        val lists = listDataManager.readLists()
-        todoListRecyclerView.adapter = TodoListAdapter(lists, this)
-
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -86,10 +72,11 @@ class MainActivity : AppCompatActivity(), TodoListAdapter.TodoListClickListener 
         myDialog.setPositiveButton(positiveButtonTitle){
             dialog, _ ->  //takes a dialog and an int to know which button was tapped
 
-            val adapter = todoListRecyclerView.adapter as TodoListAdapter
+       /*     val adapter = todoListRecyclerView.adapter as TodoListAdapter*/
             val list = TaskList(todoTitleEditText.text.toString())
-            listDataManager.saveList(list)
-            adapter.addList(list)
+       /*     listDataManager.saveList(list) //saving the list
+            adapter.addList(list) // updating the RecyclerView with the list*/
+            todoListFragment.addList(list)
 
             dialog.dismiss()
             showTaskListItems(list)
@@ -97,14 +84,13 @@ class MainActivity : AppCompatActivity(), TodoListAdapter.TodoListClickListener 
         myDialog.create().show()
 
     }
-
     private fun showTaskListItems(list: TaskList){
         val taskListItem = Intent(this, DetailActivity::class.java)
         taskListItem.putExtra(INTENT_LIST_KEY,list)
         startActivityForResult(taskListItem, LIST_DETAIL_REQUEST_CODE)
     }
 
-    override fun listItemClicked(list: TaskList) {
+    override fun onTodoListClicked(list: TaskList) {
         showTaskListItems(list)
     }
 
