@@ -30,8 +30,8 @@ class MainActivity : AppCompatActivity(), TodoListFragment.OnFragmentInteraction
         fab.setOnClickListener { _  ->
             showCreateTodoListDialog()
         }
+        
     }
-
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.menu_main, menu)
@@ -49,8 +49,6 @@ class MainActivity : AppCompatActivity(), TodoListFragment.OnFragmentInteraction
             }
         }
     }
-
-
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         // Handle action bar item clicks here. The action bar will
@@ -86,7 +84,6 @@ class MainActivity : AppCompatActivity(), TodoListFragment.OnFragmentInteraction
         myDialog.create().show()
 
     }
-
     private fun showTaskListItems(list: TaskList){
         val taskListItem = Intent(this, DetailActivity::class.java)
         taskListItem.putExtra(INTENT_LIST_KEY,list)
