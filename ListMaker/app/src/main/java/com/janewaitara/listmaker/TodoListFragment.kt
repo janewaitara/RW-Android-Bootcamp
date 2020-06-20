@@ -12,8 +12,10 @@ import android.view.ViewGroup
 import android.widget.EditText
 import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.android.synthetic.main.activity_main.*
 
 
@@ -57,6 +59,7 @@ class TodoListFragment : Fragment(),TodoListAdapter.TodoListClickListener {
         todoListRecyclerView.layoutManager = LinearLayoutManager(activity) //knowing about layout when placing items
         todoListRecyclerView.adapter = TodoListAdapter(lists, this) //passing the list read from the manager
 
+        val fab = view.findViewById<FloatingActionButton>(R.id.fab)
         fab.setOnClickListener { _  ->
             showCreateTodoListDialog()
         }
@@ -95,6 +98,9 @@ class TodoListFragment : Fragment(),TodoListAdapter.TodoListClickListener {
 
     //when viewHolder is clicked, it is called and notifies the listener that something has happened(The listener is the activity)
     override fun listItemClicked(list: TaskList) {
+        view?.let {
+            it.findNavController().navigate(R.id.action_todoListFragment3_to_taskDetailFragment2)
+        }
             }
 
     fun addList(list: TaskList) {

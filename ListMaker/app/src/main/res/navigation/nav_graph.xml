@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto" android:id="@+id/nav_graph"
+    app:startDestination="@id/todoListFragment3">
+
+    <fragment
+        android:id="@+id/todoListFragment3"
+        android:name="com.janewaitara.listmaker.TodoListFragment"
+        android:label="TodoListFragment" >
+        <action
+            android:id="@+id/action_todoListFragment3_to_taskDetailFragment2"
+            app:destination="@id/taskDetailFragment2" />
+    </fragment>
+    <fragment
+        android:id="@+id/taskDetailFragment2"
+        android:name="com.janewaitara.listmaker.TaskDetailFragment"
+        android:label="TaskDetailFragment" />
+</navigation>
