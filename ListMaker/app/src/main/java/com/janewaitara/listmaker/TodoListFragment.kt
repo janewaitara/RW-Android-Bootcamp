@@ -22,7 +22,7 @@ class TodoListFragment : Fragment() {
 
     private var listener: OnFragmentInteractionListener? = null //interface created
 
-    //used when the fragment is in the process of being create
+    //used when the fragment is in the process of being created
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
