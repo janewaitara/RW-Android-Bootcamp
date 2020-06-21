@@ -14,5 +14,9 @@
     <fragment
         android:id="@+id/taskDetailFragment2"
         android:name="com.janewaitara.listmaker.TaskDetailFragment"
-        android:label="TaskDetailFragment" />
+        android:label="TaskDetailFragment" >
+        <argument
+            android:name="list_string"
+            app:argType="string" />
+    </fragment>
 </navigation>

@@ -98,10 +98,8 @@ class TodoListFragment : Fragment(),TodoListAdapter.TodoListClickListener {
 
     //when viewHolder is clicked, it is called and notifies the listener that something has happened(The listener is the activity)
     override fun listItemClicked(list: TaskList) {
-        view?.let {
-            it.findNavController().navigate(R.id.action_todoListFragment3_to_taskDetailFragment2)
-        }
-            }
+      showTaskListItems(list)
+    }
 
     fun addList(list: TaskList) {
         listDataManager.saveList(list)
@@ -141,6 +139,10 @@ class TodoListFragment : Fragment(),TodoListAdapter.TodoListClickListener {
         }
     }
     private fun showTaskListItems(list: TaskList){
+        view?.let {
+            val action = TodoListFragmentDirections.actionTodoListFragment3ToTaskDetailFragment2(list.name)
+            it.findNavController().navigate(action)
+        }
 
     }
 
