@@ -31,10 +31,8 @@
 package com.raywenderlich.android.creatures.ui
 
 import android.os.Bundle
+import android.view.*
 import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
@@ -47,10 +45,38 @@ class AllFragment : Fragment() {
 
   private val adapter = CreatureCardAdapter(CreatureStore.getCreatures().toMutableList())
 
+  private lateinit var layoutManager: StaggeredGridLayoutManager
+
   companion object {
     fun newInstance(): AllFragment {
       return AllFragment()
     }
+  }
+
+  override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    setHasOptionsMenu(true) //setting up the menu
+  }
+
+  override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+    super.onCreateOptionsMenu(menu, inflater)
+
+    inflater.inflate(R.menu.menu_all,menu)
+  }
+
+  override fun onOptionsItemSelected(item: MenuItem): Boolean {
+    val id = item.itemId
+    when(id){
+      R.id.action_span_1 -> {
+        showListView()
+        return true
+      }
+      R.id.action_span_2 -> {
+        showGridView()
+        return true
+      }
+    }
+    return super.onOptionsItemSelected(item)
   }
 
   override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -70,10 +96,16 @@ class AllFragment : Fragment() {
       }
     }*/
 
-    val layoutManager = StaggeredGridLayoutManager(2,GridLayoutManager.VERTICAL)
+   layoutManager = StaggeredGridLayoutManager(2,GridLayoutManager.VERTICAL)
    creatureRecyclerView.layoutManager = layoutManager
     creatureRecyclerView.adapter = adapter
 
+  }
 
+  private fun showListView(){
+    layoutManager.spanCount = 1
+  }
+  private fun showGridView(){
+    layoutManager.spanCount = 2
   }
 }
