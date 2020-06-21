@@ -23,8 +23,12 @@ class CreatureAdapter(private val creatures: List<Creature>): RecyclerView.Adapt
 
     }
 
-    class ViewHolder(itemView: View): RecyclerView.ViewHolder(itemView){
+    class ViewHolder(itemView: View): RecyclerView.ViewHolder(itemView), View.OnClickListener{
         private lateinit var creature: Creature
+
+        init {
+            itemView.setOnClickListener(this)//setting the viewHolder as the click Listener for the itemView
+        }
 
         fun bind(creature: Creature){
            this.creature = creature
@@ -32,7 +36,15 @@ class CreatureAdapter(private val creatures: List<Creature>): RecyclerView.Adapt
             //set the creature image and fullName using data from the creature
             itemView.creatureImage.setImageResource(context.resources.getIdentifier(creature.uri, null,context.packageName))
             itemView.fullName.text = creature.fullName
+            itemView.nickName.text = creature.nickname
 
+        }
+
+        override fun onClick(view: View) {
+            //get the context and create an intent for the Detail Screen
+            val context = view.context
+            val intent = CreatureActivity.newIntent(context, creature.id)
+            context.startActivity(intent)
         }
     }
 }
