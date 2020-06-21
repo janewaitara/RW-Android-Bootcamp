@@ -33,4 +33,6 @@ dependencies {
     implementation 'androidx.preference:preference:1.1.1'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation 'androidx.recyclerview:recyclerview:1.2.0-alpha03'
+    implementation "androidx.cardview:cardview:1.0.0"
+    implementation "androidx.palette:palette:1.0.0" //setting a background color within each card based on creature color
 }
