@@ -25,14 +25,14 @@
         android:textColor="@android:color/black"
         android:textSize="@dimen/creature_name_text_size"
         android:textStyle="bold"
-        app:layout_constraintBottom_toTopOf="@+id/nickName"
+        app:layout_constraintBottom_toTopOf="@+id/fullName"
         app:layout_constraintHorizontal_chainStyle="packed"
         app:layout_constraintStart_toEndOf="@id/creatureImage"
         app:layout_constraintTop_toTopOf="parent"
         tools:text="Full Name" />
 
     <TextView
-        android:id="@+id/nickName"
+        android:id="@+id/fullName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/padding_standard"
