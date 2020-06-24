@@ -30,10 +30,10 @@ object SharedPrefRepository: DropRepository {
     }
 
     override fun clearDrop(drop: Drop) {
-        TODO("Not yet implemented")
+        sharedPrefs().edit().remove(drop.id).apply()
     }
 
     override fun clearAllDrops() {
-        TODO("Not yet implemented")
+        sharedPrefs().edit().clear().apply()
     }
 }
