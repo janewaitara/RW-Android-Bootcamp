@@ -47,7 +47,6 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.raywenderlich.android.datadrop.R
 import com.raywenderlich.android.datadrop.app.Injection
@@ -84,6 +83,11 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, MapContract.View {
 
     presenter = Injection.provideMapPresenter(this)
     presenter.start()
+
+
+    //call to set the map type
+    map.mapType = MapType.createMapType(presenter.getMapType()).getGoogleMapType()
+
 
     mapIsReady = true
   }
@@ -220,6 +224,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, MapContract.View {
       rb.text = mapType.displayString
       rb.setPadding(48, 48, 48, 48)
       rg.addView(rb)
+
     }
 
     rg.setOnCheckedChangeListener { group, checkedId ->
@@ -227,7 +232,10 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, MapContract.View {
       (0 until childCount)
           .map { group.getChildAt(it) as RadioButton }
           .filter { it.id == checkedId }
-          .forEach { println("Selected RadioButton -> ${it.text}") }
+          .forEach {
+            presenter.saveMapType(it.text.toString())
+            map.mapType = MapType.createMapType(presenter.getMapType()).getGoogleMapType() //setting the google map mapType
+          }
     }
 
     dialog.show()
