@@ -47,6 +47,7 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.raywenderlich.android.datadrop.R
 import com.raywenderlich.android.datadrop.app.Injection
@@ -125,6 +126,11 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, MapContract.View {
   private fun placeMarkerOnMap(location: LatLng, title: String) {
     val markerOptions = MarkerOptions().position(location)
     markerOptions.title(title)
+
+    //getting the savedMarkerColor pref while putting the marker on the map
+    val markerColor = MarkerColor.createMarkerColor(presenter.getMarkerColor())
+    markerOptions.icon(markerColor.getMarkerBitmapDescriptor())
+
     map.addMarker(markerOptions)
   }
 
@@ -186,6 +192,9 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, MapContract.View {
       rb.text = markerColor.displayString
       rb.setPadding(48, 48, 48, 48)
       rg.addView(rb)
+      if (presenter.getMarkerColor() == markerColor.displayString){
+        rg.check(rb.id)
+      }
     }
 
     rg.setOnCheckedChangeListener { group, checkedId ->
@@ -193,7 +202,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, MapContract.View {
       (0 until childCount)
           .map { group.getChildAt(it) as RadioButton }
           .filter { it.id == checkedId }
-          .forEach { println("Selected RadioButton -> ${it.text}") }
+          .forEach { presenter.saveMarkerColor(it.text.toString()) }
     }
 
     dialog.show()
