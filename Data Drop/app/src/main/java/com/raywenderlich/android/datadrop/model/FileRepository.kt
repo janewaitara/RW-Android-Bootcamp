@@ -5,9 +5,7 @@ import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.raywenderlich.android.datadrop.app.DataDropApplication
-import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
+import java.io.*
 
 object FileRepository: DropRepository {
 
@@ -35,7 +33,20 @@ object FileRepository: DropRepository {
     }
 
     override fun getDrops(): List<Drop> {
-       return emptyList()
+       val drops = mutableListOf<Drop>()
+
+        try {
+            val fileList = dropsDirectory().list()
+            fileList.map { convertStreamToString(dropInputStream(it)) }.mapTo(drops){
+
+                gson.fromJson(it, Drop::class.java)
+            }
+
+        }catch (e: IOException){
+            Log.e("FileRepository","Error reading drop")
+        }
+
+        return drops
     }
 
     override fun clearDrop(drop: Drop) {
@@ -58,6 +69,23 @@ object FileRepository: DropRepository {
     //get an outPutString to write to
     private fun dropOutputString(drop: Drop): FileOutputStream{
         return FileOutputStream(dropFile(dropFileName(drop)))
+    }
+
+    private fun dropInputStream(filename: String): FileInputStream{
+        return FileInputStream(dropFile(filename))
+    }
+    //reads data from a file into a String
+    @Throws(IOException::class)
+    private fun convertStreamToString(inputStream: InputStream): String{
+        val reader = BufferedReader(InputStreamReader(inputStream))
+        val sb = StringBuilder()
+        var line: String? = reader.readLine()
+        while (line != null){
+            sb.append(line).append("\n")
+            line = reader.readLine()
+        }
+        reader.close()
+        return sb.toString()
     }
 
 }
