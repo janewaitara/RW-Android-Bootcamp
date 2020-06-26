@@ -58,7 +58,15 @@ object FileRepository: DropRepository {
     }
 
     //returns dropsDirectory in internal storage by calling getDir on the context.getDir creates the directory if it doesn't exist
-    private fun dropsDirectory() = getContext().getDir("drops",Context.MODE_PRIVATE)
+    //private fun dropsDirectory() = getContext().getDir("drops",Context.MODE_PRIVATE)
+
+    private fun dropsDirectory() :File{
+        val dropsDirectory = File(getContext().getExternalFilesDir(null), "drops")
+        if (!dropsDirectory.exists()){
+            dropsDirectory.mkdirs()
+        }
+        return dropsDirectory
+    }
 
     //retrieves a file object using dropDirectory
     private fun dropFile(fileName: String) = File(dropsDirectory(), fileName)
