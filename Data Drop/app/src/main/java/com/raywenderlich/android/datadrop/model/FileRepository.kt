@@ -50,7 +50,8 @@ object FileRepository: DropRepository {
     }
 
     override fun clearDrop(drop: Drop) {
-        TODO("Not yet implemented")
+
+        dropFile(dropFileName(drop)).delete()
     }
 
     override fun clearAllDrops() {
