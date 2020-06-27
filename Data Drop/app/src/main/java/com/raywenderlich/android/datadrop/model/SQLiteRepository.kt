@@ -28,6 +28,9 @@ class SQLiteRepository : DropRepository {
     private fun getDropContentValues(drop: Drop): ContentValues{
         val contentValues = ContentValues()
         contentValues.put(DropTable.Columns.ID, drop.id)
+        contentValues.put(DropTable.Columns.LATITUDE, drop.latLng.latitude)
+        contentValues.put(DropTable.Columns.LONGITUDE, drop.latLng.longitude)
+        contentValues.put(DropTable.Columns.DROP_MESSAGE, drop.dropMessage)
         return contentValues
     }
 }
