@@ -40,7 +40,7 @@ class SQLiteRepository : DropRepository {
 
     override fun clearDrop(drop: Drop) {
         database.delete(DropTable.NAME,
-                DropTable.Columns.ID + " = ?",
+                DropTable.Columns.ID + " = ?", // the question mark is replaced by the drop id passed into the array
                 arrayOf(drop.id)
         )
     }
