@@ -55,7 +55,13 @@ object FileRepository: DropRepository {
     }
 
     override fun clearAllDrops() {
-        TODO("Not yet implemented")
+        val fileList = dropsDirectory().list()
+        try {
+            fileList.map { dropFile(it).delete() }
+            dropsDirectory().delete()
+        }catch (e: IOException){
+            Log.e("FileRepository","Error clearing all drops")
+        }
     }
 
     //returns dropsDirectory in internal storage by calling getDir on the context.getDir creates the directory if it doesn't exist
