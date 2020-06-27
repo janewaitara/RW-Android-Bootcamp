@@ -1,7 +1,6 @@
 package com.raywenderlich.android.datadrop.model
 
 import android.content.ContentValues
-import android.database.CursorWrapper
 import android.util.Log
 import com.raywenderlich.android.datadrop.app.DataDropApplication
 import com.raywenderlich.android.datadrop.model.DropDbSchema.DropTable
@@ -55,6 +54,7 @@ class SQLiteRepository : DropRepository {
         contentValues.put(DropTable.Columns.LATITUDE, drop.latLng.latitude)
         contentValues.put(DropTable.Columns.LONGITUDE, drop.latLng.longitude)
         contentValues.put(DropTable.Columns.DROP_MESSAGE, drop.dropMessage)
+        contentValues.put(DropTable.Columns.MARKER_COLOR, drop.markerColor)
         return contentValues
     }
 
