@@ -1,8 +1,11 @@
 package com.raywenderlich.android.datadrop.model
 
 import android.content.ContentValues
+import android.database.CursorWrapper
+import android.util.Log
 import com.raywenderlich.android.datadrop.app.DataDropApplication
 import com.raywenderlich.android.datadrop.model.DropDbSchema.DropTable
+import java.io.IOException
 
 class SQLiteRepository : DropRepository {
 
@@ -15,11 +18,27 @@ class SQLiteRepository : DropRepository {
     }
 
     override fun getDrops(): List<Drop> {
-       return emptyList()
+        val drops = mutableListOf<Drop>()
+
+        val cursor = queryDrops(null,null)
+
+        try {
+            cursor.moveToFirst()
+            while (!cursor.isAfterLast){
+                drops.add(cursor.getDrop())
+                cursor.moveToNext()
+            }
+        }catch (e: IOException){
+            Log.e("SQLiteRepository", "Error reading drop")
+        }finally {
+            cursor.close()
+        }
+
+
+       return drops
     }
 
     override fun clearDrop(drop: Drop) {
-
     }
 
     override fun clearAllDrops() {
@@ -32,5 +51,19 @@ class SQLiteRepository : DropRepository {
         contentValues.put(DropTable.Columns.LONGITUDE, drop.latLng.longitude)
         contentValues.put(DropTable.Columns.DROP_MESSAGE, drop.dropMessage)
         return contentValues
+    }
+
+    private fun queryDrops(where: String?, whereArgs: Array<String>?): DropCursorWrapper{
+        //querying the database
+        val cursor = database.query(
+                DropTable.NAME,
+                null,
+                where,
+                whereArgs,
+                null,
+                null,
+                null
+        )
+        return DropCursorWrapper(cursor)
     }
 }
