@@ -31,10 +31,12 @@
 
 package com.raywenderlich.android.datadrop.model
 
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 import com.google.android.gms.maps.model.LatLng
 import java.util.*
 
-
-data class Drop(val latLng: LatLng, val dropMessage: String, val id: String = UUID.randomUUID().toString(), val markerColor: Int = 0) {
+@Entity(tableName = "drop_table")
+data class Drop(val latLng: LatLng, val dropMessage: String, @PrimaryKey val id: String = UUID.randomUUID().toString(), val markerColor: Int = 0) {
   val latLngString = "%.6f, %.6f".format(latLng.latitude, latLng.longitude)
 }
