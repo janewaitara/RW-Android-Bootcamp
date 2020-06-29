@@ -34,6 +34,7 @@ package com.raywenderlich.android.datadrop.ui.droplist
 import androidx.recyclerview.widget.RecyclerView
 import android.view.View
 import android.view.ViewGroup
+import androidx.recyclerview.widget.DiffUtil
 import com.raywenderlich.android.datadrop.R
 import com.raywenderlich.android.datadrop.app.inflate
 import com.raywenderlich.android.datadrop.model.Drop
@@ -54,9 +55,12 @@ class DropListAdapter(private val drops: MutableList<Drop>, private val listener
   }
 
   fun updateDrops(drops: List<Drop>) {
+    val diffCallback = DropDiffCallback(this.drops, drops)
+    val diffResult = DiffUtil.calculateDiff(diffCallback)
+
     this.drops.clear()
     this.drops.addAll(drops)
-    notifyDataSetChanged()
+    diffResult.dispatchUpdatesTo(this)
   }
 
   fun removeDropAtPosition(position: Int) {
@@ -75,7 +79,7 @@ class DropListAdapter(private val drops: MutableList<Drop>, private val listener
     fun bind(drop: Drop) {
       this.drop = drop
       itemView.message.text = drop.dropMessage
-      itemView.latlng.text = drop.latLngString
+      itemView.latlng.text = drop.latLngString()
     }
   }
 
