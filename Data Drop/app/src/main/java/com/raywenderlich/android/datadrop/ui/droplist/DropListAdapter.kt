@@ -63,16 +63,12 @@ class DropListAdapter(private val drops: MutableList<Drop>, private val listener
     diffResult.dispatchUpdatesTo(this)
   }
 
-  fun removeDropAtPosition(position: Int) {
-    drops.removeAt(position)
-    notifyItemRemoved(position)
+
+  override fun onItemDismiss(viewHolder: RecyclerView.ViewHolder, position: Int) {
+    listener.deleteDropAtPosition(drops[position])
   }
 
-  override fun onItemDismiss(viewHolder: androidx.recyclerview.widget.RecyclerView.ViewHolder, position: Int) {
-    listener.deleteDropAtPosition(drops[position], position)
-  }
-
-  inner class ViewHolder(itemView: View) : androidx.recyclerview.widget.RecyclerView.ViewHolder(itemView) {
+  inner class ViewHolder(itemView: View) :RecyclerView.ViewHolder(itemView) {
 
     private lateinit var drop: Drop
 
@@ -84,6 +80,6 @@ class DropListAdapter(private val drops: MutableList<Drop>, private val listener
   }
 
   interface DropListAdapterListener {
-    fun deleteDropAtPosition(drop: Drop, position: Int)
+    fun deleteDropAtPosition(drop: Drop)
   }
 }

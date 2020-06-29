@@ -40,7 +40,8 @@ class DropListActivity : AppCompatActivity(),  DropListAdapter.DropListAdapterLi
   }
 
 
-  override fun deleteDropAtPosition(drop: Drop, position: Int) {
+  override fun deleteDropAtPosition(drop: Drop) {
+    dropsViewModel.clearDrop(drop)
 
   }
 
