@@ -37,9 +37,8 @@ import android.os.AsyncTask
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
-import com.raywenderlich.android.datadrop.model.DropDatabase
-import com.raywenderlich.android.datadrop.model.MarkerColor
-import com.raywenderlich.android.datadrop.model.MarkerColorDao
+import com.google.android.gms.maps.model.LatLng
+import com.raywenderlich.android.datadrop.model.*
 
 
 class DataDropApplication : Application() {
@@ -72,6 +71,7 @@ class DataDropApplication : Application() {
   private class PopulateDbAsync(db: DropDatabase): AsyncTask<Void, Void, Void>(){
 
     private val markerColorDao: MarkerColorDao = db.markerColorDao()
+    private val dropDao: DropDao = db.dropDao()
 
     override fun doInBackground(vararg params: Void): Void? {
       var markerColor = MarkerColor(MarkerColor.RED_COLOR)
@@ -80,7 +80,12 @@ class DataDropApplication : Application() {
       markerColorDao.insert(markerColor)
       markerColor = MarkerColor(MarkerColor.BLUE_COLOR)
       markerColorDao.insert(markerColor)
+
+      var drop = Drop(LatLng(37.4220, -122.0841), "42")
+      dropDao.insert(drop)
+
       return null
+
     }
   }
 
