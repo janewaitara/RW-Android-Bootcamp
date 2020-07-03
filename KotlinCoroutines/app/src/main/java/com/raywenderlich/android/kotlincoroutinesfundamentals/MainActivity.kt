@@ -34,8 +34,12 @@
 
 package com.raywenderlich.android.kotlincoroutinesfundamentals
 
+import android.graphics.BitmapFactory
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import kotlinx.android.synthetic.main.activity_main.*
+import java.net.HttpURLConnection
+import java.net.URL
 
 /**
  * Main Screen
@@ -48,7 +52,18 @@ class MainActivity : AppCompatActivity() {
 
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_main)
+    
+    //constant that holds the link to the image
+    val imageUrl = URL("https://wallpaperplay.com/walls/full/1/c/7/38027.jpg")
+    //open up a connection to the imageUrl
+    val connection = imageUrl.openConnection() as HttpURLConnection
+    connection.doInput = true  //only be receiving data
+    connection.connect()  //create a connection
 
-    // Your code
+    //transferring the data from the link to the app
+    val inputStream = connection.inputStream
+    val bitmap = BitmapFactory.decodeStream(inputStream)
+
+    image.setImageBitmap(bitmap)
   }
 }
