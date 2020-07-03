@@ -53,6 +53,7 @@ import com.google.android.gms.maps.model.MarkerOptions
 import com.raywenderlich.android.datadrop.R
 import com.raywenderlich.android.datadrop.model.Drop
 import com.raywenderlich.android.datadrop.model.MapPrefs
+import com.raywenderlich.android.datadrop.model.MarkerColor
 import com.raywenderlich.android.datadrop.ui.droplist.DropListActivity
 import com.raywenderlich.android.datadrop.viewModel.DropsViewModel
 

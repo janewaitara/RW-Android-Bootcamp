@@ -33,8 +33,13 @@ package com.raywenderlich.android.datadrop.app
 
 import android.app.Application
 import android.content.Context
+import android.os.AsyncTask
 import androidx.room.Room
+import androidx.room.RoomDatabase
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.raywenderlich.android.datadrop.model.DropDatabase
+import com.raywenderlich.android.datadrop.model.MarkerColor
+import com.raywenderlich.android.datadrop.model.MarkerColorDao
 
 
 class DataDropApplication : Application() {
@@ -52,6 +57,31 @@ class DataDropApplication : Application() {
     instance = this
     super.onCreate()
 
-    database = Room.databaseBuilder(this, DropDatabase::class.java,"drop_database").build()
+    database = Room.databaseBuilder(this, DropDatabase::class.java,"drop_database").addCallback(roomDatabaseCallBack).build()
   }
+
+  //Prepopulate the marker Color table
+  private val roomDatabaseCallBack = object : RoomDatabase.Callback(){
+    override fun onOpen(db: SupportSQLiteDatabase) {
+      super.onOpen(db)
+      PopulateDbAsync(DataDropApplication.database).execute()
+    }
+  }
+
+  //make a populate dbAsync asyncTask subclass that uses markerColor Dao to insert marker color into the db
+  private class PopulateDbAsync(db: DropDatabase): AsyncTask<Void, Void, Void>(){
+
+    private val markerColorDao: MarkerColorDao = db.markerColorDao()
+
+    override fun doInBackground(vararg params: Void): Void? {
+      var markerColor = MarkerColor(MarkerColor.RED_COLOR)
+      markerColorDao.insert(markerColor)
+      markerColor = MarkerColor(MarkerColor.GREEN_COLOR)
+      markerColorDao.insert(markerColor)
+      markerColor = MarkerColor(MarkerColor.BLUE_COLOR)
+      markerColorDao.insert(markerColor)
+      return null
+    }
+  }
+
 }
