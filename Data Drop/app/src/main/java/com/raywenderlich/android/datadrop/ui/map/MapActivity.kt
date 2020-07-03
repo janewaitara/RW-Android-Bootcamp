@@ -42,22 +42,28 @@ import android.view.Window
 import android.widget.EditText
 import android.widget.RadioButton
 import android.widget.RadioGroup
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.raywenderlich.android.datadrop.R
-import com.raywenderlich.android.datadrop.app.Injection
 import com.raywenderlich.android.datadrop.model.Drop
+import com.raywenderlich.android.datadrop.model.MapPrefs
+import com.raywenderlich.android.datadrop.model.MarkerColor
 import com.raywenderlich.android.datadrop.ui.droplist.DropListActivity
+import com.raywenderlich.android.datadrop.viewModel.DropsViewModel
+import com.raywenderlich.android.datadrop.viewModel.MarkerColorViewModel
 
 
-class MapActivity : AppCompatActivity(), OnMapReadyCallback, MapContract.View {
+class MapActivity : AppCompatActivity(), OnMapReadyCallback{
 
-  override lateinit var presenter: MapContract.Presenter
-
+  private lateinit var dropsViewModel: DropsViewModel
+  private lateinit var markerColorViewModel: MarkerColorViewModel
   private lateinit var map: GoogleMap
 
   private var mapIsReady = false
@@ -69,6 +75,9 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, MapContract.View {
     val mapFragment = supportFragmentManager
         .findFragmentById(R.id.map) as SupportMapFragment
     mapFragment.getMapAsync(this)
+
+    dropsViewModel = ViewModelProviders.of(this).get(DropsViewModel::class.java)
+    markerColorViewModel = ViewModelProviders.of(this).get(MarkerColorViewModel::class.java)
   }
 
   override fun onMapReady(googleMap: GoogleMap) {
@@ -81,24 +90,18 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, MapContract.View {
       showDropDialog(latLng)
     }
 
-    presenter = Injection.provideMapPresenter(this)
-    presenter.start()
+    dropsViewModel.getDrops().observe(this, Observer<List<Drop>>{drops ->
+     showDrops(drops ?: emptyList())
+    })
 
 
     //call to set the map type
-    map.mapType = MapType.createMapType(presenter.getMapType()).getGoogleMapType()
+    map.mapType = MapType.createMapType(MapPrefs.getMapType()).getGoogleMapType()
 
 
     mapIsReady = true
   }
 
-  override fun onResume() {
-    super.onResume()
-
-    if (mapIsReady) {
-      presenter.start()
-    }
-  }
 
   override fun onCreateOptionsMenu(menu: Menu): Boolean {
     super.onCreateOptionsMenu(menu)
@@ -116,24 +119,20 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, MapContract.View {
     return super.onOptionsItemSelected(item)
   }
 
-  override fun showDrop(drop: Drop) {
-    placeMarkerOnMap(drop.latLng, drop.dropMessage, drop.markerColor)
-  }
 
-  override fun showDrops(drops: List<Drop>) {
+ private fun showDrops(drops: List<Drop>) {
     map.clear()
     drops.forEach { drop ->
       placeMarkerOnMap(drop.latLng, drop.dropMessage, drop.markerColor)
     }
   }
 
-  private fun placeMarkerOnMap(location: LatLng, title: String, color: Int = 0) {
+  private fun placeMarkerOnMap(location: LatLng, title: String, markerColor: String) {
     val markerOptions = MarkerOptions().position(location)
     markerOptions.title(title)
 
     //getting the savedMarkerColor pref while putting the marker on the map
-    val markerColor = MarkerColor.createMarkerColor(color)
-    markerOptions.icon(markerColor.getMarkerBitmapDescriptor())
+    markerOptions.icon(MarkerColor.getMarkerBitmapDescriptor(markerColor))
 
     map.addMarker(markerOptions)
   }
@@ -145,31 +144,36 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, MapContract.View {
 
     val rg = dialogView.findViewById(R.id.radio_group) as RadioGroup
 
-    var color = 0
+    var color = MarkerColor(MarkerColor.RED_COLOR)
 
-    for ((index,markerColor) in MarkerColor.values().withIndex()){
+    markerColorViewModel.getMarkerColors().observe(this, Observer<List<MarkerColor>>{markerColors ->
+      if (markerColors != null){
+        for (markerColor in markerColors){
 
-      val rb = RadioButton(this)
-      rb.text = markerColor.displayString
-      rb.setPadding(36,36,36,36)
-      rg.addView(rb)
+          val rb = RadioButton(this)
+          rb.text = markerColor.displayString
+          rb.setPadding(36,36,36,36)
+          rg.addView(rb)
 
-      if (presenter.getMarkerColor() == markerColor.displayString){
-        rg.check(rb.id)
-        color = index
-      }
-    }
-    //updates the color variable when the color radio button is changed
-    rg.setOnCheckedChangeListener{group, checkedId ->
-      val childCount = group.childCount
-      for (index in 0 until childCount){
-        val button = group.getChildAt(index)
-        if (button.id == checkedId){
-          color = index
+          if (MapPrefs.getMarkerColor() == markerColor.displayString){
+            rg.check(rb.id)
+            color = markerColor
+          }
         }
-      }
-    }
+        //updates the color variable when the color radio button is changed
+        rg.setOnCheckedChangeListener{group, checkedId ->
+          val childCount = group.childCount
+          for (index in 0 until childCount){
+            val button = group.getChildAt(index)
+            if (button.id == checkedId){
+              color = markerColors[index]
+            }
+          }
+        }
 
+      }
+
+    })
 
     val messageEditText = dialogView.findViewById(R.id.messageEditText) as EditText
 
@@ -219,23 +223,26 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, MapContract.View {
 
     val rg = dialog.findViewById(R.id.radio_group) as RadioGroup
 
-    MarkerColor.values().forEach { markerColor ->
-      val rb = RadioButton(this)
-      rb.text = markerColor.displayString
-      rb.setPadding(48, 48, 48, 48)
-      rg.addView(rb)
-      if (presenter.getMarkerColor() == markerColor.displayString){
-        rg.check(rb.id)
+    markerColorViewModel.getMarkerColors().observe(this, Observer<List<MarkerColor>> {markerColors ->
+      if (markerColors != null){
+        markerColors.forEach{ markerColor->
+          val rb = RadioButton(this)
+          rb.text = markerColor.displayString
+          rb.setPadding(48, 48, 48, 48)
+          rg.addView(rb)
+          if (MapPrefs.getMarkerColor() == markerColor.displayString){
+            rg.check(rb.id)
+          }
+        }
+        rg.setOnCheckedChangeListener { group, checkedId ->
+          val childCount = group.childCount
+          (0 until childCount)
+                  .map { group.getChildAt(it) as RadioButton }
+                  .filter { it.id == checkedId }
+                  .forEach { MapPrefs.saveMakerColor(it.text.toString())}
+        }
       }
-    }
-
-    rg.setOnCheckedChangeListener { group, checkedId ->
-      val childCount = group.childCount
-      (0 until childCount)
-          .map { group.getChildAt(it) as RadioButton }
-          .filter { it.id == checkedId }
-          .forEach { presenter.saveMarkerColor(it.text.toString()) }
-    }
+    })
 
     dialog.show()
   }
@@ -261,20 +268,19 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, MapContract.View {
           .map { group.getChildAt(it) as RadioButton }
           .filter { it.id == checkedId }
           .forEach {
-            presenter.saveMapType(it.text.toString())
-            map.mapType = MapType.createMapType(presenter.getMapType()).getGoogleMapType() //setting the google map mapType
+            MapPrefs.saveMapType(it.text.toString())
+            map.mapType = MapType.createMapType(MapPrefs.getMapType()).getGoogleMapType() //setting the google map mapType
           }
     }
 
     dialog.show()
   }
 
-  private fun addDrop(latLng: LatLng, message: String, markerColor: Int) {
-    presenter.addDrop(Drop(latLng, message, markerColor = markerColor))
+  private fun addDrop(latLng: LatLng, message: String, markerColor:MarkerColor) {
+    dropsViewModel.insert(Drop(latLng,message,markerColor = markerColor.displayString))
   }
 
   private fun clearAllDrops() {
-    presenter.clearAllDrops()
-    map.clear()
+    dropsViewModel.clearAllDrops()
   }
 }

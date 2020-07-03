@@ -34,6 +34,7 @@ package com.raywenderlich.android.datadrop.ui.droplist
 import androidx.recyclerview.widget.RecyclerView
 import android.view.View
 import android.view.ViewGroup
+import androidx.recyclerview.widget.DiffUtil
 import com.raywenderlich.android.datadrop.R
 import com.raywenderlich.android.datadrop.app.inflate
 import com.raywenderlich.android.datadrop.model.Drop
@@ -54,32 +55,31 @@ class DropListAdapter(private val drops: MutableList<Drop>, private val listener
   }
 
   fun updateDrops(drops: List<Drop>) {
+    val diffCallback = DropDiffCallback(this.drops, drops)
+    val diffResult = DiffUtil.calculateDiff(diffCallback)
+
     this.drops.clear()
     this.drops.addAll(drops)
-    notifyDataSetChanged()
+    diffResult.dispatchUpdatesTo(this)
   }
 
-  fun removeDropAtPosition(position: Int) {
-    drops.removeAt(position)
-    notifyItemRemoved(position)
+
+  override fun onItemDismiss(viewHolder: RecyclerView.ViewHolder, position: Int) {
+    listener.deleteDropAtPosition(drops[position])
   }
 
-  override fun onItemDismiss(viewHolder: androidx.recyclerview.widget.RecyclerView.ViewHolder, position: Int) {
-    listener.deleteDropAtPosition(drops[position], position)
-  }
-
-  inner class ViewHolder(itemView: View) : androidx.recyclerview.widget.RecyclerView.ViewHolder(itemView) {
+  inner class ViewHolder(itemView: View) :RecyclerView.ViewHolder(itemView) {
 
     private lateinit var drop: Drop
 
     fun bind(drop: Drop) {
       this.drop = drop
       itemView.message.text = drop.dropMessage
-      itemView.latlng.text = drop.latLngString
+      itemView.latlng.text = drop.latLngString()
     }
   }
 
   interface DropListAdapterListener {
-    fun deleteDropAtPosition(drop: Drop, position: Int)
+    fun deleteDropAtPosition(drop: Drop)
   }
 }
