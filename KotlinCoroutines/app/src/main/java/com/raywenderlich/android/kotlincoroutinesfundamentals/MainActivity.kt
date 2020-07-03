@@ -52,18 +52,21 @@ class MainActivity : AppCompatActivity() {
 
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_main)
-    
-    //constant that holds the link to the image
-    val imageUrl = URL("https://wallpaperplay.com/walls/full/1/c/7/38027.jpg")
-    //open up a connection to the imageUrl
-    val connection = imageUrl.openConnection() as HttpURLConnection
-    connection.doInput = true  //only be receiving data
-    connection.connect()  //create a connection
 
-    //transferring the data from the link to the app
-    val inputStream = connection.inputStream
-    val bitmap = BitmapFactory.decodeStream(inputStream)
+    //a thread which execute a piece of code using runnable and is the started
+    Thread(Runnable {
+      //constant that holds the link to the image
+      val imageUrl = URL("https://wallpaperplay.com/walls/full/1/c/7/38027.jpg")
+      //open up a connection to the imageUrl
+      val connection = imageUrl.openConnection() as HttpURLConnection
+      connection.doInput = true  //only be receiving data
+      connection.connect()  //create a connection
 
-    image.setImageBitmap(bitmap)
+      //transferring the data from the link to the app
+      val inputStream = connection.inputStream
+      val bitmap = BitmapFactory.decodeStream(inputStream)
+
+      image.setImageBitmap(bitmap)
+    }).start()
   }
 }
