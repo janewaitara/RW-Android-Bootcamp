@@ -36,6 +36,7 @@ package com.raywenderlich.android.kotlincoroutinesfundamentals
 
 import android.graphics.BitmapFactory
 import android.os.Bundle
+import android.os.Handler
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_main.*
 import java.net.HttpURLConnection
@@ -53,6 +54,8 @@ class MainActivity : AppCompatActivity() {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_main)
 
+    val mainLooper = mainLooper //Looper.getMainLooper()
+
     //a thread which execute a piece of code using runnable and is the started
     Thread(Runnable {
       //constant that holds the link to the image
@@ -66,7 +69,16 @@ class MainActivity : AppCompatActivity() {
       val inputStream = connection.inputStream
       val bitmap = BitmapFactory.decodeStream(inputStream)
 
-      image.setImageBitmap(bitmap)
+      /**
+       * The results needs to be posted on the main thread
+       *
+       *method 1: using runOnUiThread
+       *method 2: Using handlers and main Loopers
+       * */
+      //runOnUiThread { image.setImageBitmap(bitmap) }
+      Handler(mainLooper).post { image.setImageBitmap(bitmap) }
+
     }).start()
+
   }
 }
