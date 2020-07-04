@@ -39,6 +39,8 @@ import android.os.Bundle
 import android.os.Handler
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.net.HttpURLConnection
 import java.net.URL
 
@@ -56,8 +58,8 @@ class MainActivity : AppCompatActivity() {
 
     val mainLooper = mainLooper //Looper.getMainLooper()
 
-    //a thread which execute a piece of code using runnable and is the started
-    Thread(Runnable {
+    GlobalScope.launch {
+
       //constant that holds the link to the image
       val imageUrl = URL("https://wallpaperplay.com/walls/full/1/c/7/38027.jpg")
       //open up a connection to the imageUrl
@@ -77,8 +79,31 @@ class MainActivity : AppCompatActivity() {
        * */
       //runOnUiThread { image.setImageBitmap(bitmap) }
       Handler(mainLooper).post { image.setImageBitmap(bitmap) }
+    }
 
-    }).start()
+    //a thread which execute a piece of code using runnable and is the started
+    /*Thread(Runnable {
+      //constant that holds the link to the image
+      val imageUrl = URL("https://wallpaperplay.com/walls/full/1/c/7/38027.jpg")
+      //open up a connection to the imageUrl
+      val connection = imageUrl.openConnection() as HttpURLConnection
+      connection.doInput = true  //only be receiving data
+      connection.connect()  //create a connection
+
+      //transferring the data from the link to the app
+      val inputStream = connection.inputStream
+      val bitmap = BitmapFactory.decodeStream(inputStream)
+
+      *//**
+       * The results needs to be posted on the main thread
+       *
+       *method 1: using runOnUiThread
+       *method 2: Using handlers and main Loopers
+       * *//*
+      //runOnUiThread { image.setImageBitmap(bitmap) }
+      Handler(mainLooper).post { image.setImageBitmap(bitmap) }
+
+    }).start()*/
 
   }
 }
