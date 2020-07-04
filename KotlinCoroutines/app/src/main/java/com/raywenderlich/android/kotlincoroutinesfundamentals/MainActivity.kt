@@ -37,8 +37,10 @@ package com.raywenderlich.android.kotlincoroutinesfundamentals
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.os.Handler
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.net.HttpURLConnection
@@ -58,7 +60,10 @@ class MainActivity : AppCompatActivity() {
 
     val mainLooper = mainLooper //Looper.getMainLooper()
 
-    GlobalScope.launch {
+    Log.d("TaskThread ", Thread.currentThread().name)
+    GlobalScope.launch(context = Dispatchers.IO) {
+
+      Log.d("TaskThread ", Thread.currentThread().name)
 
       //constant that holds the link to the image
       val imageUrl = URL("https://wallpaperplay.com/walls/full/1/c/7/38027.jpg")
@@ -71,14 +76,10 @@ class MainActivity : AppCompatActivity() {
       val inputStream = connection.inputStream
       val bitmap = BitmapFactory.decodeStream(inputStream)
 
-      /**
-       * The results needs to be posted on the main thread
-       *
-       *method 1: using runOnUiThread
-       *method 2: Using handlers and main Loopers
-       * */
-      //runOnUiThread { image.setImageBitmap(bitmap) }
-      Handler(mainLooper).post { image.setImageBitmap(bitmap) }
+      runOnUiThread {
+        Log.d("TaskThread ", Thread.currentThread().name)
+
+        image.setImageBitmap(bitmap) }
     }
 
     //a thread which execute a piece of code using runnable and is the started
@@ -94,14 +95,15 @@ class MainActivity : AppCompatActivity() {
       val inputStream = connection.inputStream
       val bitmap = BitmapFactory.decodeStream(inputStream)
 
-      *//**
+       /**
        * The results needs to be posted on the main thread
        *
        *method 1: using runOnUiThread
        *method 2: Using handlers and main Loopers
-       * *//*
+       * */
+
       //runOnUiThread { image.setImageBitmap(bitmap) }
-      Handler(mainLooper).post { image.setImageBitmap(bitmap) }
+      Handler(Looper.getMainLooper()).post { image.setImageBitmap(bitmap) }
 
     }).start()*/
 
