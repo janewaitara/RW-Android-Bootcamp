@@ -22,7 +22,7 @@ object MapPrefs {
      sharedPrefs().edit().putString(KEY_MAP_TYPE,mapType).apply()
     }
 
-    fun getMarkerColor(): String = sharedPrefs().getString(KEY_MAKER_COLOR,"Red")!!
+    fun getMarkerColor(): String = sharedPrefs().getString(KEY_MAKER_COLOR,MarkerColor.RED_COLOR)!!
 
     fun getMapType(): String = sharedPrefs().getString(KEY_MAP_TYPE, "Normal")!!
 }
