@@ -1,4 +1,0 @@
-package com.raywenderlich.android.taskie.networking
-
-class NetworkStatusChecker {
-}

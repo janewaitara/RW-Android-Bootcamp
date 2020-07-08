@@ -38,6 +38,10 @@ import com.raywenderlich.android.taskie.model.Task
 import com.raywenderlich.android.taskie.model.UserProfile
 import com.raywenderlich.android.taskie.model.request.AddTaskRequest
 import com.raywenderlich.android.taskie.model.request.UserDataRequest
+import java.io.BufferedReader
+import java.io.InputStreamReader
+import java.net.HttpURLConnection
+import java.net.URL
 
 /**
  * Holds decoupled logic for all the API calls.
@@ -52,7 +56,56 @@ class RemoteApi {
   }
 
   fun registerUser(userDataRequest: UserDataRequest, onUserCreated: (String?, Throwable?) -> Unit) {
-    onUserCreated("Success!", null)
+    Thread(Runnable {
+      //to achieve a http url connection
+      // /api/register is the end point path(unique combination of a rest method and a url path which holds unique functionality)
+      val connection = URL("$BASE_URL/api/register").openConnection() as HttpURLConnection //open a connection
+      connection.requestMethod = "POST"
+      connection.setRequestProperty("Content-Type","application/json") //to use json format for
+      connection.setRequestProperty("Accept","application/json")
+
+      //describing time outs inCase server doesn't connect properly
+      connection.readTimeout = 10000
+      connection.connectTimeout = 10000
+      //lets the connection perform data output or input
+      connection.doOutput = true
+      connection.doInput = true
+
+      //to format registration data into json
+      val body = "{\"name\":\"${userDataRequest.name}\"," +
+              "\"email\":\"${userDataRequest.email}\"," +
+              " \"password\":\"${userDataRequest.password}\"}"
+
+      val bytes = body.toByteArray() //convert since json will be sent as a series of bytes
+
+      //open an outPutStream to send the data and write the bytes to the API end point
+      try {
+        //sending the data
+       connection.outputStream.use { outputStream->  //we are using "use" to automatically close the stream once the operation is done
+         outputStream.write(bytes)
+       }
+
+        //reading response
+        val reader = InputStreamReader(connection.inputStream) //creating an input stream reader to read the response from connection input stream
+        reader.use { input->
+          val response = StringBuilder()
+          val bufferedReader = BufferedReader(input) //reading the input one chunk at a time
+
+          bufferedReader.useLines { lines->
+            lines.forEach {
+              response.append(it.trim())
+            }
+         }
+
+          onUserCreated(response.toString(), null)
+        }
+
+      }catch (error: Throwable) {
+        onUserCreated(null, error)
+      }
+      connection.disconnect()
+
+    }).start()
   }
 
   fun getTasks(onTasksReceived: (List<Task>, Throwable?) -> Unit) {
