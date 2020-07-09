@@ -34,11 +34,13 @@
 
 package com.raywenderlich.android.taskie.networking
 
+import com.google.gson.Gson
 import com.raywenderlich.android.taskie.App
 import com.raywenderlich.android.taskie.model.Task
 import com.raywenderlich.android.taskie.model.UserProfile
 import com.raywenderlich.android.taskie.model.request.AddTaskRequest
 import com.raywenderlich.android.taskie.model.request.UserDataRequest
+import com.raywenderlich.android.taskie.model.response.GetTasksResponse
 import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.InputStreamReader
@@ -54,6 +56,8 @@ const val BASE_URL = "https://taskie-rw.herokuapp.com"
 
 class RemoteApi {
 
+  private val gson = Gson()
+
   fun loginUser(userDataRequest: UserDataRequest, onUserLoggedIn: (String?, Throwable?) -> Unit) {
 
     Thread(Runnable {
@@ -66,11 +70,8 @@ class RemoteApi {
       connection.doOutput = true
       connection.doInput = true
 
-      val requestJson = JSONObject()
-      requestJson.put("email", userDataRequest.email)
-      requestJson.put("password", userDataRequest.password)
+      val body  = gson.toJson(userDataRequest)
 
-      val body = requestJson.toString()
       val bytes = body.toByteArray()
 
       try {
@@ -123,11 +124,8 @@ class RemoteApi {
       connection.doInput = true
 
       //to format registration data into json
-      val requestJson = JSONObject()
-      requestJson.put("name", userDataRequest.name)
-      requestJson.put("email", userDataRequest.email)
-      requestJson.put("password", userDataRequest.password)
-      val body = requestJson.toString()
+
+      val body  = gson.toJson(userDataRequest)
 
       val bytes = body.toByteArray() //convert since json will be sent as a series of bytes
 
@@ -165,20 +163,42 @@ class RemoteApi {
   }
 
   fun getTasks(onTasksReceived: (List<Task>, Throwable?) -> Unit) {
-    onTasksReceived(listOf(
-        Task("id",
-            "Wash laundry",
-            "Wash the whites and colored separately!",
-            false,
-            1
-        ),
-        Task("id2",
-            "Do some work",
-            "Finish the project",
-            false,
-            3
-        )
-    ), null)
+
+    Thread(Runnable {
+      val connection = URL("$BASE_URL/api/note").openConnection() as HttpURLConnection
+      connection.requestMethod = "GET"
+      connection.setRequestProperty("Content-Type","application/json") //to use json format for
+      connection.setRequestProperty("Accept","application/json")
+      connection.setRequestProperty("Authorization", App.getToken())
+      connection.connectTimeout = 10000
+      connection.readTimeout = 10000
+      connection.doInput = true
+
+      try {
+        val reader = InputStreamReader(connection.inputStream)
+
+        reader.use { input->
+
+          val response = StringBuilder()
+          val bufferedReader = BufferedReader(input)
+
+          bufferedReader.useLines { lines->
+            lines.forEach {
+              response.append(it.trim())
+            }
+          }
+
+          val tasksResponse = gson.fromJson(response.toString(), GetTasksResponse::class.java) //parse the response as a string into GetTasksResponse
+          onTasksReceived(tasksResponse.notes ?: listOf(), null)
+        }
+      }catch (error: Throwable){
+        onTasksReceived(emptyList(), error)
+      }
+
+      connection.disconnect()
+
+    }).start()
+
   }
 
   fun deleteTask(onTaskDeleted: (Throwable?) -> Unit) {
@@ -202,12 +222,14 @@ class RemoteApi {
       connection.doOutput = true
       connection.doInput = true
 
-      val request = JSONObject()
+   /*   val request = JSONObject()
       request.put("title", addTaskRequest.title)
       request.put("content", addTaskRequest.content)
       request.put("taskPriority", addTaskRequest.taskPriority)
 
-      val body = request.toString()
+      val body = request.toString()*/
+      val body  = gson.toJson(addTaskRequest)
+
       val bytes = body.toByteArray()
 
       try {
@@ -242,7 +264,7 @@ class RemoteApi {
       }
 
       connection.disconnect()
-      
+
     }).start()
   }
 
