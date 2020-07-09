@@ -34,6 +34,7 @@
 
 package com.raywenderlich.android.taskie.networking
 
+import com.raywenderlich.android.taskie.App
 import com.raywenderlich.android.taskie.model.Task
 import com.raywenderlich.android.taskie.model.UserProfile
 import com.raywenderlich.android.taskie.model.request.AddTaskRequest
@@ -43,6 +44,7 @@ import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.URL
+import java.nio.Buffer
 
 /**
  * Holds decoupled logic for all the API calls.
@@ -151,6 +153,7 @@ class RemoteApi {
           val jsonObject = JSONObject(response.toString())
 
           onUserCreated(jsonObject.getString("message"), null)
+
         }
 
       }catch (error: Throwable) {
@@ -187,14 +190,60 @@ class RemoteApi {
   }
 
   fun addTask(addTaskRequest: AddTaskRequest, onTaskCreated: (Task?, Throwable?) -> Unit) {
-    onTaskCreated(
-        Task("id3",
-            addTaskRequest.title,
-            addTaskRequest.content,
-            false,
-            addTaskRequest.taskPriority
-        ), null
-    )
+
+    Thread(Runnable {
+      val connection = URL("$BASE_URL/api/note").openConnection() as HttpURLConnection
+      connection.requestMethod = "POST"
+      connection.setRequestProperty("Content-Type","application/json") //to use json format for
+      connection.setRequestProperty("Accept","application/json")
+      connection.setRequestProperty("Authorization", App.getToken())
+      connection.connectTimeout = 10000
+      connection.readTimeout = 10000
+      connection.doOutput = true
+      connection.doInput = true
+
+      val request = JSONObject()
+      request.put("title", addTaskRequest.title)
+      request.put("content", addTaskRequest.content)
+      request.put("taskPriority", addTaskRequest.taskPriority)
+
+      val body = request.toString()
+      val bytes = body.toByteArray()
+
+      try {
+        //sending the register data
+        connection.outputStream.use {outputStream ->
+          outputStream.write(bytes)
+        }
+
+        val reader = InputStreamReader(connection.inputStream)
+        reader.use { input->
+          val response = StringBuilder()
+          val bufferedReader = BufferedReader(input)
+
+          bufferedReader.useLines { lines->
+            lines.forEach {
+              response.append(it.trim())
+            }
+          }
+
+          val jsonObject = JSONObject(response.toString())
+          val task = Task(
+               jsonObject.getString("id"),
+                  jsonObject.getString("title"),
+                  jsonObject.getString("content"),
+                  jsonObject.getBoolean("isCompleted"),
+                  jsonObject.getInt("taskPriority")
+          )
+          onTaskCreated(task,null)
+        }
+      }catch (error: Throwable){
+        onTaskCreated(null, error)
+      }
+
+      connection.disconnect()
+      
+    }).start()
   }
 
   fun getUserProfile(onUserProfileReceived: (UserProfile?, Throwable?) -> Unit) {
