@@ -38,6 +38,7 @@ import com.raywenderlich.android.taskie.model.Task
 import com.raywenderlich.android.taskie.model.UserProfile
 import com.raywenderlich.android.taskie.model.request.AddTaskRequest
 import com.raywenderlich.android.taskie.model.request.UserDataRequest
+import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.net.HttpURLConnection
@@ -52,7 +53,55 @@ const val BASE_URL = "https://taskie-rw.herokuapp.com"
 class RemoteApi {
 
   fun loginUser(userDataRequest: UserDataRequest, onUserLoggedIn: (String?, Throwable?) -> Unit) {
-    onUserLoggedIn("token", null)
+
+    Thread(Runnable {
+      val connection = URL("$BASE_URL/api/login").openConnection() as HttpURLConnection
+      connection.requestMethod = "POST"
+      connection.setRequestProperty("Content-Type","application/json") //to use json format for
+      connection.setRequestProperty("Accept","application/json")
+      connection.readTimeout = 10000
+      connection.connectTimeout = 10000
+      connection.doOutput = true
+      connection.doInput = true
+
+      val requestJson = JSONObject()
+      requestJson.put("email", userDataRequest.email)
+      requestJson.put("password", userDataRequest.password)
+
+      val body = requestJson.toString()
+      val bytes = body.toByteArray()
+
+      try {
+        connection.outputStream.use { outPutStream->
+          outPutStream.write(bytes)
+        }
+
+        val reader = InputStreamReader(connection.inputStream)
+        reader.use { input->
+
+          val response = StringBuilder()
+          val bufferedReader = BufferedReader(input)
+
+          bufferedReader.useLines { lines->
+            lines.forEach {
+              response.append(it.trim())
+            }
+          }
+          //parsing the json response by accessing the token property within and use jsonObject to parse the token
+          val jsonObject = JSONObject(response.toString())
+          val token = jsonObject.getString("token") //selecting the token field from the jsonObject to send to the callback
+
+          onUserLoggedIn(token, null)
+
+        }
+
+      }catch (error: Throwable){
+        onUserLoggedIn(null, error)
+      }
+
+      connection.disconnect()
+    }).start()
+
   }
 
   fun registerUser(userDataRequest: UserDataRequest, onUserCreated: (String?, Throwable?) -> Unit) {
@@ -72,15 +121,17 @@ class RemoteApi {
       connection.doInput = true
 
       //to format registration data into json
-      val body = "{\"name\":\"${userDataRequest.name}\"," +
-              "\"email\":\"${userDataRequest.email}\"," +
-              " \"password\":\"${userDataRequest.password}\"}"
+      val requestJson = JSONObject()
+      requestJson.put("name", userDataRequest.name)
+      requestJson.put("email", userDataRequest.email)
+      requestJson.put("password", userDataRequest.password)
+      val body = requestJson.toString()
 
       val bytes = body.toByteArray() //convert since json will be sent as a series of bytes
 
       //open an outPutStream to send the data and write the bytes to the API end point
       try {
-        //sending the data
+        //sending the register data
        connection.outputStream.use { outputStream->  //we are using "use" to automatically close the stream once the operation is done
          outputStream.write(bytes)
        }
@@ -96,8 +147,10 @@ class RemoteApi {
               response.append(it.trim())
             }
          }
+          //parsing the register response
+          val jsonObject = JSONObject(response.toString())
 
-          onUserCreated(response.toString(), null)
+          onUserCreated(jsonObject.getString("message"), null)
         }
 
       }catch (error: Throwable) {
