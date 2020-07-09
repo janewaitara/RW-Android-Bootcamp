@@ -34,6 +34,7 @@
 
 package com.raywenderlich.android.taskie.ui.notes.dialog
 
+import android.net.ConnectivityManager
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -41,6 +42,7 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import androidx.fragment.app.DialogFragment
 import com.raywenderlich.android.taskie.R
+import com.raywenderlich.android.taskie.networking.NetworkStatusChecker
 import com.raywenderlich.android.taskie.networking.RemoteApi
 import kotlinx.android.synthetic.main.fragment_dialog_task_options.*
 
@@ -52,6 +54,10 @@ class TaskOptionsDialogFragment : DialogFragment() {
   private var taskOptionSelectedListener: TaskOptionSelectedListener? = null
 
   private val remoteApi = RemoteApi()
+
+  private val networkStatusChecker by lazy {
+    NetworkStatusChecker(activity?.getSystemService(ConnectivityManager::class.java))
+  }
 
   companion object {
     private const val KEY_TASK_ID = "task_id"
@@ -104,11 +110,15 @@ class TaskOptionsDialogFragment : DialogFragment() {
     }
 
     completeTask.setOnClickListener {
-      remoteApi.completeTask { error ->
-        if (error == null) {
-          taskOptionSelectedListener?.onTaskCompleted(taskId)
+      networkStatusChecker.performIfConnectedToInternet {
+        remoteApi.completeTask(taskId) { error ->
+          activity?.runOnUiThread {
+            if (error == null) {
+              taskOptionSelectedListener?.onTaskCompleted(taskId)
+            }
+            dismissAllowingStateLoss()
+          }
         }
-        dismissAllowingStateLoss()
       }
     }
   }
