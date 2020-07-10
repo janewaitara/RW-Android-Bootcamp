@@ -3,10 +3,7 @@ package com.raywenderlich.android.taskie.networking
 import okhttp3.RequestBody
 import okhttp3.ResponseBody
 import retrofit2.Call
-import retrofit2.http.Body
-import retrofit2.http.GET
-import retrofit2.http.Header
-import retrofit2.http.POST
+import retrofit2.http.*
 
 interface RemoteApiService {
 
@@ -29,5 +26,13 @@ interface RemoteApiService {
 
     @GET("/api/user/profile")
     fun getMyProfile(@Header("Authorization") token: String): Call<ResponseBody>
+
+    @POST("/api/note/complete")
+    fun completeTask(@Header("Authorization") token: String,
+                     @Query("id")noteId: String) : Call<ResponseBody>
+
+    @POST("/api/note")
+    fun addTask(@Header("Authorization") token: String,
+                @Body request: RequestBody):  Call<ResponseBody>
 }
 
