@@ -42,6 +42,8 @@ import com.raywenderlich.android.taskie.model.UserProfile
 import com.raywenderlich.android.taskie.model.request.AddTaskRequest
 import com.raywenderlich.android.taskie.model.request.UserDataRequest
 import com.raywenderlich.android.taskie.model.response.GetTasksResponse
+import com.raywenderlich.android.taskie.model.response.LoginResponse
+import com.raywenderlich.android.taskie.model.response.UserProfileResponse
 import okhttp3.MediaType
 import okhttp3.RequestBody
 import okhttp3.ResponseBody
@@ -69,51 +71,30 @@ class RemoteApi(private val apiService: RemoteApiService) {
 
   fun loginUser(userDataRequest: UserDataRequest, onUserLoggedIn: (String?, Throwable?) -> Unit) {
 
-    Thread(Runnable {
-      val connection = URL("$BASE_URL/api/login").openConnection() as HttpURLConnection
-      connection.requestMethod = "POST"
-      connection.setRequestProperty("Content-Type","application/json") //to use json format for
-      connection.setRequestProperty("Accept","application/json")
-      connection.readTimeout = 10000
-      connection.connectTimeout = 10000
-      connection.doOutput = true
-      connection.doInput = true
-
-      val body  = gson.toJson(userDataRequest)
-
-      val bytes = body.toByteArray()
-
-      try {
-        connection.outputStream.use { outPutStream->
-          outPutStream.write(bytes)
-        }
-
-        val reader = InputStreamReader(connection.inputStream)
-        reader.use { input->
-
-          val response = StringBuilder()
-          val bufferedReader = BufferedReader(input)
-
-          bufferedReader.useLines { lines->
-            lines.forEach {
-              response.append(it.trim())
-            }
-          }
-          //parsing the json response by accessing the token property within and use jsonObject to parse the token
-          val jsonObject = JSONObject(response.toString())
-          val token = jsonObject.getString("token") //selecting the token field from the jsonObject to send to the callback
-
-          onUserLoggedIn(token, null)
-
-        }
-
-      }catch (error: Throwable){
+    val body = RequestBody.create(
+            MediaType.parse("application/json"), gson.toJson(userDataRequest)
+    )
+    apiService.loginUser(body).enqueue(object: Callback<ResponseBody>{
+      override fun onFailure(call: Call<ResponseBody>, error: Throwable) {
         onUserLoggedIn(null, error)
       }
 
-      connection.disconnect()
-    }).start()
+      override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
+        val message = response.body()?.string()
+        if (message == null){
+          onUserLoggedIn(null, NullPointerException("No response body"))
+        }
+        val loginResponse = gson.fromJson(message, LoginResponse::class.java)
 
+        if (loginResponse == null ||
+                loginResponse.token.isNullOrBlank()){
+          onUserLoggedIn(null, NullPointerException("No response body"))
+        }else{
+          onUserLoggedIn(loginResponse.token, null)
+        }
+      }
+
+    })
   }
 
   fun registerUser(userDataRequest: UserDataRequest, onUserCreated: (String?, Throwable?) -> Unit) {
@@ -337,6 +318,41 @@ class RemoteApi(private val apiService: RemoteApiService) {
   }
 
   fun getUserProfile(onUserProfileReceived: (UserProfile?, Throwable?) -> Unit) {
-    onUserProfileReceived(UserProfile("mail@mail.com", "Filip", 10), null)
+
+    //requesting the notes since the user profile contains the amount of notes I have
+    getTasks { tasks, error ->
+      /*if its an NPE, request the profile and return the of notes being 0 and if its an error, no need to request the profile*/
+      if (error != null && error !is NullPointerException){
+        onUserProfileReceived(null, error)
+        return@getTasks
+      }
+
+      apiService.getMyProfile(App.getToken()).enqueue(object: Callback<ResponseBody>{
+        override fun onFailure(call: Call<ResponseBody>, error: Throwable) {
+          onUserProfileReceived(null, error)
+        }
+
+        override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
+
+          val jsonResponse = response.body()?.string()
+          if (jsonResponse == null){
+            onUserProfileReceived(null, error)
+            return
+          }
+          val profileResponse = gson.fromJson(jsonResponse, UserProfileResponse::class.java )
+
+          if (profileResponse.email == null || profileResponse.name == null ){
+            onUserProfileReceived(null, error)
+          }else{
+            onUserProfileReceived(UserProfile(
+                    profileResponse.email,
+                    profileResponse.name,
+                    tasks.size
+            ), null )
+          }
+        }
+      })
+
+    }
   }
 }

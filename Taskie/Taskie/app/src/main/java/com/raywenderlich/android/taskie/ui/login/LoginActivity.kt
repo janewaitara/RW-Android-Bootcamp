@@ -88,14 +88,11 @@ class LoginActivity : AppCompatActivity() {
     //making sure the  API is called when there is an internet connection
     networkStatusChecker.performIfConnectedToInternet {
       remoteApi.loginUser(userDataRequest) { token: String?, throwable: Throwable? ->
-        //UI is updated from the main thread
-        runOnUiThread {
           if (token != null && token.isNotBlank()) {
             onLoginSuccess(token)
           } else if (throwable != null) {
             showLoginError()
           }
-        }
       }
     }
   }

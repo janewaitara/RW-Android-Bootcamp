@@ -23,5 +23,11 @@ interface RemoteApiService {
 
     @GET("/api/note")
     fun getNotes(@Header("Authorization") token: String): Call<ResponseBody>
+
+    @POST("/api/login")
+    fun loginUser(@Body request: RequestBody): Call<ResponseBody>
+
+    @GET("/api/user/profile")
+    fun getMyProfile(@Header("Authorization") token: String): Call<ResponseBody>
 }
 
