@@ -8,4 +8,14 @@ import retrofit2.http.POST
 
 interface RemoteApiService {
 
+    /**
+     * @POST tells retrofit it will be a post request to that relative endpoint path
+     * request Body @Body and tells retrofit to put it as the body parameter in the request
+     * RequestBody is a specific type in okHttpclient which describes data you can send into the server
+     * ResponseBody is a counterpart that describes data you received
+     * Call is a Retrofit object which describes a prepared call
+     * */
+
+    @POST("/api/register")
+    fun registerUser(@Body request: RequestBody): Call<ResponseBody>
 }

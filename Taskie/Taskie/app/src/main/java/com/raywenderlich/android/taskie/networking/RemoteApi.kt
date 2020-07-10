@@ -41,9 +41,16 @@ import com.raywenderlich.android.taskie.model.UserProfile
 import com.raywenderlich.android.taskie.model.request.AddTaskRequest
 import com.raywenderlich.android.taskie.model.request.UserDataRequest
 import com.raywenderlich.android.taskie.model.response.GetTasksResponse
+import okhttp3.MediaType
+import okhttp3.RequestBody
+import okhttp3.ResponseBody
 import org.json.JSONObject
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import java.io.BufferedReader
 import java.io.InputStreamReader
+import java.lang.NullPointerException
 import java.net.HttpURLConnection
 import java.net.URL
 import java.nio.Buffer
@@ -55,7 +62,7 @@ import java.nio.Buffer
 const val BASE_URL = "https://taskie-rw.herokuapp.com"
 
 //remote api service property which is a middleman between UI and actual API service
-class RemoteApi(private val remoteApiService: RemoteApiService) {
+class RemoteApi(private val apiService: RemoteApiService) {
 
   private val gson = Gson()
 
@@ -109,7 +116,7 @@ class RemoteApi(private val remoteApiService: RemoteApiService) {
   }
 
   fun registerUser(userDataRequest: UserDataRequest, onUserCreated: (String?, Throwable?) -> Unit) {
-    Thread(Runnable {
+   /* Thread(Runnable {
       //to achieve a http url connection
       // /api/register is the end point path(unique combination of a rest method and a url path which holds unique functionality)
       val connection = URL("$BASE_URL/api/register").openConnection() as HttpURLConnection //open a connection
@@ -160,7 +167,44 @@ class RemoteApi(private val remoteApiService: RemoteApiService) {
       }
       connection.disconnect()
 
-    }).start()
+    }).start()*/
+
+    //prepares data in the json format as RequestBody for retrofit
+    val body = RequestBody.create(
+            MediaType.parse("application/json"), gson.toJson(userDataRequest)
+    )
+    //enqueue(unblocking - async) api call in the background
+    apiService.registerUser(body).enqueue(object : Callback<ResponseBody>{
+      /**
+       * called when the request fails eg when:
+       *  reaching an endpoint that doest exist
+       *  lacking an Internet connection
+       *  Timeout
+       * */
+
+      override fun onFailure(call: Call<ResponseBody>, error: Throwable) {
+        onUserCreated(null, error)
+      }
+
+      /**
+       * when you receive a response from the server
+       *  can be successful or an error
+       * Response types:
+       *  Positive with a nun null body- body()
+       *  Negative with a nun null error body - errorBody()
+       * */
+      override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
+       val message = response.body()?.string()
+        if (message == null){
+          onUserCreated(null, NullPointerException("No response body"))
+          return
+        }
+
+        onUserCreated(message,null)
+      }
+
+    })
+
   }
 
   fun getTasks(onTasksReceived: (List<Task>, Throwable?) -> Unit) {
