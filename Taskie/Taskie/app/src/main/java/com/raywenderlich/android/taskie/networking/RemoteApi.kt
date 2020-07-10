@@ -34,6 +34,7 @@
 
 package com.raywenderlich.android.taskie.networking
 
+import android.util.Log
 import com.google.gson.Gson
 import com.raywenderlich.android.taskie.App
 import com.raywenderlich.android.taskie.model.Task
@@ -209,41 +210,30 @@ class RemoteApi(private val apiService: RemoteApiService) {
 
   fun getTasks(onTasksReceived: (List<Task>, Throwable?) -> Unit) {
 
-    Thread(Runnable {
-      val connection = URL("$BASE_URL/api/note").openConnection() as HttpURLConnection
-      connection.requestMethod = "GET"
-      connection.setRequestProperty("Content-Type","application/json") //to use json format for
-      connection.setRequestProperty("Accept","application/json")
-      connection.setRequestProperty("Authorization", App.getToken())
-      connection.connectTimeout = 10000
-      connection.readTimeout = 10000
-      connection.doInput = true
-
-      try {
-        val reader = InputStreamReader(connection.inputStream)
-
-        reader.use { input->
-
-          val response = StringBuilder()
-          val bufferedReader = BufferedReader(input)
-
-          bufferedReader.useLines { lines->
-            lines.forEach {
-              response.append(it.trim())
-            }
-          }
-
-          val tasksResponse = gson.fromJson(response.toString(), GetTasksResponse::class.java) //parse the response as a string into GetTasksResponse
-          onTasksReceived(tasksResponse.notes.filter { !it.isCompleted } ?: listOf(), null)//filter the completed tasks
-        }
-      }catch (error: Throwable){
+    apiService.getNotes(App.getToken()).enqueue(object : Callback<ResponseBody>{
+      override fun onFailure(call: Call<ResponseBody>, error: Throwable) {
         onTasksReceived(emptyList(), error)
       }
 
-      connection.disconnect()
+      override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
+        val jsonBody = response.body()?.string()
+        //checking if there is a response
+        if (jsonBody == null){
+          onTasksReceived(emptyList(), NullPointerException("No data available"))
+          return
+        }
 
-    }).start()
+        //if there is data, parse response using gson
+        val data = gson.fromJson(jsonBody, GetTasksResponse::class.java)
 
+        if (data != null && data.notes.isNotEmpty()){
+          onTasksReceived(data.notes.filter { !it.isCompleted }, null)
+
+        }else{
+          onTasksReceived(emptyList(), NullPointerException("No data available"))
+        }
+      }
+    })
   }
 
   fun deleteTask(onTaskDeleted: (Throwable?) -> Unit) {
