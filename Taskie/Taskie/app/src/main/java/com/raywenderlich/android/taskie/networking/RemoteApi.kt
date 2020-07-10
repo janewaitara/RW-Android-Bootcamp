@@ -54,7 +54,8 @@ import java.nio.Buffer
 
 const val BASE_URL = "https://taskie-rw.herokuapp.com"
 
-class RemoteApi {
+//remote api service property which is a middleman between UI and actual API service
+class RemoteApi(private val remoteApiService: RemoteApiService) {
 
   private val gson = Gson()
 

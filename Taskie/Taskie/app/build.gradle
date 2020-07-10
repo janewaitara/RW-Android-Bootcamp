@@ -22,6 +22,12 @@ android {
       proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
     }
   }
+
+  //let retrofit and clients use more advanced features of java from newer versions
+  compileOptions{
+    sourceCompatibility JavaVersion.VERSION_1_8
+    targetCompatibility JavaVersion.VERSION_1_8
+  }
 }
 
 dependencies {
@@ -48,4 +54,7 @@ dependencies {
 
   //Gson dependency
   implementation 'com.google.code.gson:gson:2.8.6'
+
+  //retrofit library
+  implementation 'com.squareup.retrofit2:retrofit:2.7.2'
 }

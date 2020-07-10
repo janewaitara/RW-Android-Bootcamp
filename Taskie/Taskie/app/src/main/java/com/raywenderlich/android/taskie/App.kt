@@ -36,6 +36,8 @@ package com.raywenderlich.android.taskie
 
 import android.app.Application
 import android.content.Context
+import com.raywenderlich.android.taskie.networking.RemoteApi
+import com.raywenderlich.android.taskie.networking.buildApiService
 
 private const val KEY_PREFERENCES = "taskie_preferences"
 private const val KEY_TOKEN = "token"
@@ -49,13 +51,20 @@ class App : Application() {
       instance.getSharedPreferences(KEY_PREFERENCES, Context.MODE_PRIVATE)
     }
 
-    fun saveToken(token: String) {
+    fun saveToken(token: String) { //remote api service property which is a middleman between UI and actual API service
+
       preferences.edit()
           .putString(KEY_TOKEN, token)
           .apply()
     }
 
     fun getToken() = preferences.getString(KEY_TOKEN, "") ?: ""
+
+    //exposing the remoteAPI to the rest of the app to the rest of the app(building and passing)
+    private val apiService by lazy { buildApiService() }
+    val remoteApi by lazy { RemoteApi(apiService) }
+
+
   }
 
   override fun onCreate() {
