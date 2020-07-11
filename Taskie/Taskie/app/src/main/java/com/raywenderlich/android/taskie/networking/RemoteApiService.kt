@@ -29,7 +29,7 @@ interface RemoteApiService {
     fun loginUser(@Body request: UserDataRequest): Call<LoginResponse>
 
     @GET("/api/user/profile")
-    fun getMyProfile(@Header("Authorization") token: String): Call<ResponseBody>
+    fun getMyProfile(@Header("Authorization") token: String): Call<UserProfileResponse>
 
     @POST("/api/note/complete")
     fun completeTask(@Header("Authorization") token: String,

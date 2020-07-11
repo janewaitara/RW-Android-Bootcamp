@@ -34,27 +34,15 @@
 
 package com.raywenderlich.android.taskie.networking
 
-import android.util.Log
-import com.google.gson.Gson
 import com.raywenderlich.android.taskie.App
 import com.raywenderlich.android.taskie.model.Task
 import com.raywenderlich.android.taskie.model.UserProfile
 import com.raywenderlich.android.taskie.model.request.AddTaskRequest
 import com.raywenderlich.android.taskie.model.request.UserDataRequest
 import com.raywenderlich.android.taskie.model.response.*
-import okhttp3.MediaType
-import okhttp3.RequestBody
-import okhttp3.ResponseBody
-import org.json.JSONObject
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import java.io.BufferedReader
-import java.io.InputStreamReader
-import java.lang.NullPointerException
-import java.net.HttpURLConnection
-import java.net.URL
-import java.nio.Buffer
 
 /**
  * Holds decoupled logic for all the API calls.
@@ -65,7 +53,7 @@ const val BASE_URL = "https://taskie-rw.herokuapp.com"
 //remote api service property which is a middleman between UI and actual API service
 class RemoteApi(private val apiService: RemoteApiService) {
 
-  private val gson = Gson()
+
 
   fun loginUser(userDataRequest: UserDataRequest, onUserLoggedIn: (String?, Throwable?) -> Unit) {
 
@@ -250,20 +238,15 @@ class RemoteApi(private val apiService: RemoteApiService) {
         return@getTasks
       }
 
-      apiService.getMyProfile(App.getToken()).enqueue(object: Callback<ResponseBody>{
-        override fun onFailure(call: Call<ResponseBody>, error: Throwable) {
+      apiService.getMyProfile(App.getToken()).enqueue(object: Callback<UserProfileResponse>{
+        override fun onFailure(call: Call<UserProfileResponse>, error: Throwable) {
           onUserProfileReceived(null, error)
         }
 
-        override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
-          val jsonResponse = response.body()?.string()
-          if (jsonResponse == null){
-            onUserProfileReceived(null, error)
-            return
-          }
-          val profileResponse = gson.fromJson(jsonResponse, UserProfileResponse::class.java )
+        override fun onResponse(call: Call<UserProfileResponse>, response: Response<UserProfileResponse>) {
+          val profileResponse = response.body()
 
-          if (profileResponse.email == null || profileResponse.name == null ){
+          if (profileResponse?.email == null || profileResponse.name == null ){
             onUserProfileReceived(null, error)
           }else{
             onUserProfileReceived(UserProfile(
