@@ -1,8 +1,10 @@
 package com.raywenderlich.android.taskie.networking
 
+import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
+import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
-import retrofit2.converter.moshi.MoshiConverterFactory
+import okhttp3.MediaType.Companion.toMediaType
 
 //factory functions require to build retrofit clients and its API services here
 
@@ -12,9 +14,10 @@ fun buildClient(): OkHttpClient =
 
 //retrofit client factory fun
 fun buildRetrofit(): Retrofit{
+    val contentType = "application/json".toMediaType()
     return Retrofit.Builder()
             .client(buildClient())
-            .addConverterFactory(MoshiConverterFactory.create().asLenient()) //add moshi converter to retrofit which  automatically parses the json and gives it the type that you need
+            .addConverterFactory(Json.nonstrict.asConverterFactory(contentType)) // automatically parses the json and gives it the type that you need and nonstrict gives a more forgiving parser
             .baseUrl(BASE_URL)
             .build()
 }
