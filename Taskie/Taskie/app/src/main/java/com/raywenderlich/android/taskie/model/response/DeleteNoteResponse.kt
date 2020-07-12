@@ -5,4 +5,4 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 class  DeleteNoteResponse(
-        val message: String?)
+        val message: String)
