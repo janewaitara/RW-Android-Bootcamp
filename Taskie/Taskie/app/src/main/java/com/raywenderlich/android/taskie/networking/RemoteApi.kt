@@ -52,8 +52,6 @@ const val BASE_URL = "https://taskie-rw.herokuapp.com"
 //remote api service property which is a middleman between UI and actual API service
 class RemoteApi(private val apiService: RemoteApiService) {
 
-
-
   fun loginUser(userDataRequest: UserDataRequest, onUserLoggedIn: (Result <String>) -> Unit) {
 
     apiService.loginUser(userDataRequest).enqueue(object: Callback<LoginResponse>{
@@ -75,7 +73,7 @@ class RemoteApi(private val apiService: RemoteApiService) {
     })
   }
 
-  fun registerUser(userDataRequest: UserDataRequest, onUserCreated: (String?, Throwable?) -> Unit) {
+  fun registerUser(userDataRequest: UserDataRequest, onUserCreated: (Result<String>) -> Unit) {
    /* Thread(Runnable {
       //to achieve a http url connection
       // /api/register is the end point path(unique combination of a rest method and a url path which holds unique functionality)
@@ -139,7 +137,7 @@ class RemoteApi(private val apiService: RemoteApiService) {
        * */
 
       override fun onFailure(call: Call<RegisterResponse>, error: Throwable) {
-        onUserCreated(null, error)
+        onUserCreated(Failure(error))
       }
 
       /**
@@ -152,22 +150,22 @@ class RemoteApi(private val apiService: RemoteApiService) {
       override fun onResponse(call: Call<RegisterResponse>, response: Response<RegisterResponse>) {
        val message = response.body()?.message
         if (message == null){
-          onUserCreated(null, NullPointerException("No response body"))
+          onUserCreated(Failure( NullPointerException("No response body")))
           return
         }
 
-        onUserCreated(message,null)
+        onUserCreated(Success( message))
       }
 
     })
 
   }
 
-  fun getTasks(onTasksReceived: (List<Task>, Throwable?) -> Unit) {
+  fun getTasks(onTasksReceived: (Result<List<Task>>) -> Unit) {
 
     apiService.getNotes(App.getToken()).enqueue(object : Callback<GetTasksResponse>{
       override fun onFailure(call: Call<GetTasksResponse>, error: Throwable) {
-        onTasksReceived(emptyList(), error)
+        onTasksReceived(Failure( error))
       }
 
       override fun onResponse(call: Call<GetTasksResponse>, response: Response<GetTasksResponse>) {
@@ -175,10 +173,10 @@ class RemoteApi(private val apiService: RemoteApiService) {
         val data = response.body()
 
         if (data != null && data.notes.isNotEmpty()){
-          onTasksReceived(data.notes.filter { !it.isCompleted }, null)
+          onTasksReceived(Success(data.notes.filter { !it.isCompleted }))
 
         }else{
-          onTasksReceived(emptyList(), NullPointerException("No data available"))
+          onTasksReceived(Failure( NullPointerException("No data available")))
         }
       }
     })
@@ -208,18 +206,18 @@ class RemoteApi(private val apiService: RemoteApiService) {
 
   }
 
-  fun addTask(addTaskRequest: AddTaskRequest, onTaskCreated: (Task?, Throwable?) -> Unit) {
+  fun addTask(addTaskRequest: AddTaskRequest, onTaskCreated: (Result<Task>) -> Unit) {
     apiService.addTask(App.getToken(),addTaskRequest).enqueue(object : Callback<Task>{
       override fun onFailure(call: Call<Task>, error: Throwable) {
-        onTaskCreated(null,error)
+        onTaskCreated(Failure(error))
       }
 
       override fun onResponse(call: Call<Task>, response: Response<Task>) {
         val taskResponse = response.body()
         if (taskResponse == null){
-          onTaskCreated(null, NullPointerException("No response"))
+          onTaskCreated(Failure(NullPointerException("No response")))
         }else{
-          onTaskCreated(taskResponse, null)
+          onTaskCreated(Success(taskResponse))
         }
 
       }
@@ -227,32 +225,34 @@ class RemoteApi(private val apiService: RemoteApiService) {
     })
   }
 
-  fun getUserProfile(onUserProfileReceived: (UserProfile?, Throwable?) -> Unit) {
+  fun getUserProfile(onUserProfileReceived: (Result<UserProfile>) -> Unit) {
 
     //requesting the notes since the user profile contains the amount of notes I have
-    getTasks { tasks, error ->
+    getTasks { result ->
       /*if its an NPE, request the profile and return the of notes being 0 and if its an error, no need to request the profile*/
-      if (error != null && error !is NullPointerException){
-        onUserProfileReceived(null, error)
+      if (result is Failure && result.error !is NullPointerException){
+        onUserProfileReceived(Failure(result.error))
         return@getTasks
       }
 
+      val tasks = result as Success
+
       apiService.getMyProfile(App.getToken()).enqueue(object: Callback<UserProfileResponse>{
         override fun onFailure(call: Call<UserProfileResponse>, error: Throwable) {
-          onUserProfileReceived(null, error)
+          onUserProfileReceived(Failure(error))
         }
 
         override fun onResponse(call: Call<UserProfileResponse>, response: Response<UserProfileResponse>) {
           val profileResponse = response.body()
 
           if (profileResponse?.email == null || profileResponse.name == null ){
-            onUserProfileReceived(null, error)
+            onUserProfileReceived(Failure(NullPointerException("No data")))
           }else{
-            onUserProfileReceived(UserProfile(
+            onUserProfileReceived( Success(UserProfile(
                     profileResponse.email,
                     profileResponse.name,
-                    tasks.size
-            ), null )
+                    tasks.data.size
+            )))
           }
         }
       })

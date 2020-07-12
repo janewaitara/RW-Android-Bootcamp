@@ -12,7 +12,7 @@ import okhttp3.logging.HttpLoggingInterceptor
 fun buildClient(): OkHttpClient =
         OkHttpClient.Builder()
                 .addInterceptor(HttpLoggingInterceptor().apply {
-                    level = HttpLoggingInterceptor.Level.BODY
+                    level = HttpLoggingInterceptor.Level.BODY //want to log the body level of the request which mean little report of sent and received data
                 })
                 .build()
 
