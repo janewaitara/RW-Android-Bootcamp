@@ -34,15 +34,21 @@
 
 package com.raywenderlich.android.taskie.ui.notes.dialog
 
+import android.net.ConnectivityManager
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import androidx.fragment.app.DialogFragment
+import com.raywenderlich.android.taskie.App
 import com.raywenderlich.android.taskie.R
-import com.raywenderlich.android.taskie.networking.RemoteApi
+import com.raywenderlich.android.taskie.model.Success
+import com.raywenderlich.android.taskie.networking.NetworkStatusChecker
 import kotlinx.android.synthetic.main.fragment_dialog_task_options.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 /**
  * Displays the options to delete or complete a task.
@@ -51,7 +57,11 @@ class TaskOptionsDialogFragment : DialogFragment() {
 
   private var taskOptionSelectedListener: TaskOptionSelectedListener? = null
 
-  private val remoteApi = RemoteApi()
+  private val remoteApi = App.remoteApi
+
+  private val networkStatusChecker by lazy {
+    NetworkStatusChecker(activity?.getSystemService(ConnectivityManager::class.java))
+  }
 
   companion object {
     private const val KEY_TASK_ID = "task_id"
@@ -95,20 +105,28 @@ class TaskOptionsDialogFragment : DialogFragment() {
     if (taskId.isEmpty()) dismissAllowingStateLoss()
 
     deleteTask.setOnClickListener {
-      remoteApi.deleteTask { error ->
-        if (error == null) {
-          taskOptionSelectedListener?.onTaskDeleted(taskId)
+      networkStatusChecker.performIfConnectedToInternet {
+        GlobalScope.launch(Dispatchers.Main) {
+          val result = remoteApi.deleteTask(taskId) //fetch the result from the Api
+
+          if (result is Success) {
+            taskOptionSelectedListener?.onTaskDeleted(taskId)
+          }
+          dismissAllowingStateLoss()
         }
-        dismissAllowingStateLoss()
       }
     }
 
     completeTask.setOnClickListener {
-      remoteApi.completeTask { error ->
-        if (error == null) {
-          taskOptionSelectedListener?.onTaskCompleted(taskId)
+      networkStatusChecker.performIfConnectedToInternet {
+        GlobalScope.launch(Dispatchers.Main) {
+          val result = remoteApi.completeTask(taskId)
+          if (result is Success){
+            taskOptionSelectedListener?.onTaskCompleted(taskId)
+          }
+          dismissAllowingStateLoss()
         }
-        dismissAllowingStateLoss()
+
       }
     }
   }

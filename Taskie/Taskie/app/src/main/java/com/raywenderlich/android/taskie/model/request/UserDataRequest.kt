@@ -34,4 +34,10 @@
 
 package com.raywenderlich.android.taskie.model.request
 
-data class UserDataRequest(val email: String, val password: String, val name: String? = null)
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class UserDataRequest(
+        val email: String,
+        val password: String,
+        val name: String? = null)

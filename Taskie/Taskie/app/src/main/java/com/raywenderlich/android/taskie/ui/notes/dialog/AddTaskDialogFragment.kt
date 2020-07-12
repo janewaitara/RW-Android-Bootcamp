@@ -34,6 +34,7 @@
 
 package com.raywenderlich.android.taskie.ui.notes.dialog
 
+import android.net.ConnectivityManager
 import android.os.Bundle
 import android.text.TextUtils
 import android.view.LayoutInflater
@@ -42,13 +43,18 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.ArrayAdapter
 import androidx.fragment.app.DialogFragment
+import com.raywenderlich.android.taskie.App
 import com.raywenderlich.android.taskie.R
 import com.raywenderlich.android.taskie.model.PriorityColor
+import com.raywenderlich.android.taskie.model.Success
 import com.raywenderlich.android.taskie.model.Task
 import com.raywenderlich.android.taskie.model.request.AddTaskRequest
-import com.raywenderlich.android.taskie.networking.RemoteApi
+import com.raywenderlich.android.taskie.networking.NetworkStatusChecker
 import com.raywenderlich.android.taskie.utils.toast
 import kotlinx.android.synthetic.main.fragment_dialog_new_task.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 /**
  * Dialog fragment to create a new task.
@@ -56,7 +62,10 @@ import kotlinx.android.synthetic.main.fragment_dialog_new_task.*
 class AddTaskDialogFragment : DialogFragment() {
 
   private var taskAddedListener: TaskAddedListener? = null
-  private val remoteApi = RemoteApi()
+  private val remoteApi = App.remoteApi
+
+  val networkStatusChecker by lazy {
+    NetworkStatusChecker(activity?.getSystemService(ConnectivityManager::class.java)) }
 
   interface TaskAddedListener {
     fun onTaskAdded(task: Task)
@@ -108,15 +117,19 @@ class AddTaskDialogFragment : DialogFragment() {
     val title = newTaskTitleInput.text.toString()
     val content = newTaskDescriptionInput.text.toString()
     val priority = prioritySelector.selectedItemPosition + 1
+    networkStatusChecker.performIfConnectedToInternet {
+     GlobalScope.launch(Dispatchers.Main) {
 
-    remoteApi.addTask(AddTaskRequest(title, content, priority)) { task, error ->
-      if (task != null) {
-        onTaskAdded(task)
-      } else if (error != null) {
-        onTaskAddFailed()
-      }
+      val result = remoteApi.addTask(AddTaskRequest(title, content, priority))
+       if (result is Success){
+         onTaskAdded(result.data)
+       }else{
+         onTaskAddFailed()
+       }
+
     }
-    clearUi()
+        clearUi()
+    }
   }
 
 

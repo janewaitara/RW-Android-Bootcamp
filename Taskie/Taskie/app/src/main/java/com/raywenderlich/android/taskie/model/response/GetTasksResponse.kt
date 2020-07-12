@@ -35,5 +35,8 @@
 package com.raywenderlich.android.taskie.model.response
 
 import com.raywenderlich.android.taskie.model.Task
+import kotlinx.serialization.Serializable
 
-data class GetTasksResponse(val notes: List<Task> = mutableListOf())
+@Serializable
+data class GetTasksResponse(
+        val notes: List<Task> = mutableListOf())

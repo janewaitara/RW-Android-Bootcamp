@@ -42,16 +42,19 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.raywenderlich.android.taskie.App
 import com.raywenderlich.android.taskie.R
-import com.raywenderlich.android.taskie.networking.RemoteApi
+import com.raywenderlich.android.taskie.model.Success
 import com.raywenderlich.android.taskie.ui.login.LoginActivity
 import kotlinx.android.synthetic.main.fragment_profile.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 /**
  * Displays the user profile information.
  */
 class ProfileFragment : Fragment() {
 
-  private val remoteApi = RemoteApi()
+  private val remoteApi = App.remoteApi
 
   override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
       savedInstanceState: Bundle?): View? {
@@ -61,13 +64,16 @@ class ProfileFragment : Fragment() {
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
     initUi()
+    GlobalScope.launch (Dispatchers.Main) {
 
-    remoteApi.getUserProfile { userProfile, _ ->
-      if (userProfile != null) {
-        userEmail.text = userProfile.email
-        userName.text = getString(R.string.user_name_text, userProfile.name)
-        numberOfNotes.text = getString(R.string.number_of_notes_text, userProfile.numberOfNotes)
-      }
+      val userProfile = remoteApi.getUserProfile ()
+
+        if (userProfile  is Success) {
+          userEmail.text = userProfile.data.email
+          userName.text = getString(R.string.user_name_text, userProfile.data.name)
+          numberOfNotes.text = getString(R.string.number_of_notes_text, userProfile.data.numberOfNotes)
+        }
+
     }
   }
 

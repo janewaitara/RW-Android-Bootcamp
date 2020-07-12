@@ -34,4 +34,8 @@
 
 package com.raywenderlich.android.taskie.model.response
 
-data class RegisterResponse(val message: String?= "")
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class RegisterResponse(
+        val message: String?= "")
