@@ -110,7 +110,7 @@ class TaskOptionsDialogFragment : DialogFragment() {
           val result = remoteApi.deleteTask(taskId) //fetch the result from the Api
 
           if (result is Success) {
-            taskOptionSelectedListener?.onTaskDeleted(taskId)
+            taskOptionSelectedListener?.onTaskCompleted(taskId)
           }
           dismissAllowingStateLoss()
         }
@@ -119,14 +119,12 @@ class TaskOptionsDialogFragment : DialogFragment() {
 
     completeTask.setOnClickListener {
       networkStatusChecker.performIfConnectedToInternet {
-        GlobalScope.launch(Dispatchers.Main) {
-          val result = remoteApi.completeTask(taskId)
-          if (result is Success){
-            taskOptionSelectedListener?.onTaskCompleted(taskId)
+        remoteApi.completeTask(taskId) { error ->
+            if (error == null) {
+              taskOptionSelectedListener?.onTaskCompleted(taskId)
+            }
+            dismissAllowingStateLoss()
           }
-          dismissAllowingStateLoss()
-        }
-
       }
     }
   }

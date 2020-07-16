@@ -20,20 +20,20 @@ interface RemoteApiService {
     @POST("/api/register")
     fun registerUser(@Body request: UserDataRequest): Call<RegisterResponse>
 
+    @GET("/api/note")
+    fun getNotes(): Call<GetTasksResponse>
+
     @POST("/api/login")
     fun loginUser(@Body request: UserDataRequest): Call<LoginResponse>
 
-    @POST("/api/note")
-    suspend fun addTask(@Body request: AddTaskRequest):  Task
-
-    @GET("/api/note")
-    suspend fun getNotes(): GetTasksResponse
-
     @GET("/api/user/profile")
-    suspend fun getMyProfile(): UserProfileResponse
+    fun getMyProfile(): Call<UserProfileResponse>
 
     @POST("/api/note/complete")
-    suspend fun completeTask(@Query("id") noteId: String) : CompleteNoteResponse
+    fun completeTask(@Query("id") noteId: String) : Call<CompleteNoteResponse>
+
+    @POST("/api/note")
+    fun addTask(@Body request: AddTaskRequest):  Call<Task>
 
     @DELETE("/api/note")
     suspend fun deleteTask(@Query("id") noteId: String) : DeleteNoteResponse

@@ -38,6 +38,9 @@ import com.raywenderlich.android.taskie.model.*
 import com.raywenderlich.android.taskie.model.request.AddTaskRequest
 import com.raywenderlich.android.taskie.model.request.UserDataRequest
 import com.raywenderlich.android.taskie.model.response.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.withContext
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -51,9 +54,9 @@ const val BASE_URL = "https://taskie-rw.herokuapp.com"
 //remote api service property which is a middleman between UI and actual API service
 class RemoteApi(private val apiService: RemoteApiService) {
 
-  fun loginUser(userDataRequest: UserDataRequest, onUserLoggedIn: (Result<String>) -> Unit) {
+  fun loginUser(userDataRequest: UserDataRequest, onUserLoggedIn: (Result <String>) -> Unit) {
 
-    apiService.loginUser(userDataRequest).enqueue(object : Callback<LoginResponse> {
+    apiService.loginUser(userDataRequest).enqueue(object: Callback<LoginResponse>{
       override fun onFailure(call: Call<LoginResponse>, error: Throwable) {
         onUserLoggedIn(Failure(error))
       }
@@ -62,9 +65,9 @@ class RemoteApi(private val apiService: RemoteApiService) {
 
         val loginResponse = response.body()
         if (loginResponse == null ||
-                loginResponse.token.isNullOrBlank()) {
-          onUserLoggedIn(Failure(NullPointerException("No response body")))
-        } else {
+                loginResponse.token.isNullOrBlank()){
+          onUserLoggedIn(Failure(NullPointerException("No response body")) )
+        }else{
           onUserLoggedIn(Success(loginResponse.token))
         }
       }
@@ -73,7 +76,7 @@ class RemoteApi(private val apiService: RemoteApiService) {
   }
 
   fun registerUser(userDataRequest: UserDataRequest, onUserCreated: (Result<String>) -> Unit) {
-    /* Thread(Runnable {
+   /* Thread(Runnable {
       //to achieve a http url connection
       // /api/register is the end point path(unique combination of a rest method and a url path which holds unique functionality)
       val connection = URL("$BASE_URL/api/register").openConnection() as HttpURLConnection //open a connection
@@ -127,7 +130,7 @@ class RemoteApi(private val apiService: RemoteApiService) {
     }).start()*/
 
     //enqueue(unblocking - async) api call in the background
-    apiService.registerUser(userDataRequest).enqueue(object : Callback<RegisterResponse> {
+    apiService.registerUser(userDataRequest).enqueue(object : Callback<RegisterResponse>{
       /**
        * called when the request fails eg when:
        *  reaching an endpoint that doest exist
@@ -147,29 +150,41 @@ class RemoteApi(private val apiService: RemoteApiService) {
        *  Negative with a nun null error body - errorBody()
        * */
       override fun onResponse(call: Call<RegisterResponse>, response: Response<RegisterResponse>) {
-        val message = response.body()?.message
-        if (message == null) {
-          onUserCreated(Failure(NullPointerException("No response body")))
+       val message = response.body()?.message
+        if (message == null){
+          onUserCreated(Failure( NullPointerException("No response body")))
           return
         }
 
-        onUserCreated(Success(message))
+        onUserCreated(Success( message))
       }
 
     })
 
   }
 
-  suspend fun getTasks(): Result<List<Task>> = try {
-    val data = apiService.getNotes()
+  fun getTasks(onTasksReceived: (Result<List<Task>>) -> Unit) {
 
-    Success(data.notes.filter { !it.isCompleted })
+    apiService.getNotes().enqueue(object : Callback<GetTasksResponse>{
+      override fun onFailure(call: Call<GetTasksResponse>, error: Throwable) {
+        onTasksReceived(Failure( error))
+      }
 
-  } catch (error: Throwable) {
-    Failure(error)
+      override fun onResponse(call: Call<GetTasksResponse>, response: Response<GetTasksResponse>) {
+        //if there is data, parse response using gson
+        val data = response.body()
+
+        if (data != null && data.notes.isNotEmpty()){
+          onTasksReceived(Success(data.notes.filter { !it.isCompleted }))
+
+        }else{
+          onTasksReceived(Failure( NullPointerException("No data available")))
+        }
+      }
+    })
   }
 
-  suspend fun deleteTask(taskId: String): Result<String> = try {
+  suspend fun deleteTask(taskId: String): Result<String>  = try {
     val data = apiService.deleteTask(taskId)
 
     Success(data.message)
@@ -178,39 +193,79 @@ class RemoteApi(private val apiService: RemoteApiService) {
     Failure(error)
   }
 
-  suspend fun completeTask(taskId: String): Result<String> = try {
-    val data = apiService.completeTask(taskId)
 
-    Success(data.message)
 
-  } catch (error: Throwable) {
-    Failure(error)
-  }
-
-  suspend fun addTask(addTaskRequest: AddTaskRequest): Result<Task> = try {
-    val data = apiService.addTask(addTaskRequest)
-
-    Success(data)
-  } catch (error: Throwable) {
-    Failure(error)
-  }
-
-  suspend fun getUserProfile(): Result<UserProfile> = try {
-    val notesResult = getTasks()
-
-    if (notesResult is Failure){
-      Failure(notesResult.error)
-    }else{
-      val notes = notesResult as Success
-      val userProfile = apiService.getMyProfile()
-
-      if (userProfile.email == null || userProfile.name == null){
-        Failure(NullPointerException("No data available"))
-      }else{
-        Success(UserProfile(userProfile.email,userProfile.name, notes.data.size))
+  fun completeTask(taskId: String, onTaskCompleted: (Throwable?) -> Unit) {
+    apiService.completeTask(taskId).enqueue(object: Callback<CompleteNoteResponse>{
+      override fun onFailure(call: Call<CompleteNoteResponse>, error: Throwable) {
+        onTaskCompleted(error)
       }
+
+      override fun onResponse(call: Call<CompleteNoteResponse>, response: Response<CompleteNoteResponse>) {
+        val completeNoteResponse = response.body()
+
+        if (completeNoteResponse?.message == null){
+          onTaskCompleted(NullPointerException("No response"))
+        }else{
+          onTaskCompleted(null)
+        }
+
+      }
+    })
+
+  }
+
+  fun addTask(addTaskRequest: AddTaskRequest, onTaskCreated: (Result<Task>) -> Unit) {
+    apiService.addTask(addTaskRequest).enqueue(object : Callback<Task>{
+      override fun onFailure(call: Call<Task>, error: Throwable) {
+        onTaskCreated(Failure(error))
+      }
+
+      override fun onResponse(call: Call<Task>, response: Response<Task>) {
+        val taskResponse = response.body()
+        if (taskResponse == null){
+          onTaskCreated(Failure(NullPointerException("No response")))
+        }else{
+          onTaskCreated(Success(taskResponse))
+        }
+
+      }
+
+    })
+  }
+
+  fun getUserProfile(onUserProfileReceived: (Result<UserProfile>) -> Unit) {
+
+    //requesting the notes since the user profile contains the amount of notes I have
+    getTasks { result ->
+      /*if its an NPE, request the profile and return the of notes being 0 and if its an error, no need to request the profile*/
+      if (result is Failure && result.error !is NullPointerException){
+        onUserProfileReceived(Failure(result.error))
+        return@getTasks
+      }
+
+      val tasks = result as Success
+
+      apiService.getMyProfile().enqueue(object: Callback<UserProfileResponse>{
+        override fun onFailure(call: Call<UserProfileResponse>, error: Throwable) {
+          onUserProfileReceived(Failure(error))
+        }
+
+        override fun onResponse(call: Call<UserProfileResponse>, response: Response<UserProfileResponse>) {
+          val profileResponse = response.body()
+
+          if (profileResponse?.email == null || profileResponse.name == null ){
+            onUserProfileReceived(Failure(NullPointerException("No data")))
+          }else{
+            onUserProfileReceived( Success(UserProfile(
+                    profileResponse.email,
+                    profileResponse.name,
+                    tasks.data.size
+            )))
+          }
+        }
+      })
+
     }
-  }catch (error: Throwable){
-    Failure(error)
   }
 }
