@@ -32,6 +32,7 @@
  * THE SOFTWARE.
  */
 
+
 package com.raywenderlich.android.taskie.ui.register
 
 import android.net.ConnectivityManager
@@ -69,7 +70,7 @@ class RegisterActivity : AppCompatActivity() {
   private fun initUi() {
     register.setOnClickListener {
       processData(nameInput.text.toString(), emailInput.text.toString(),
-          passwordInput.text.toString())
+              passwordInput.text.toString())
     }
   }
 
@@ -77,12 +78,12 @@ class RegisterActivity : AppCompatActivity() {
     if (username.isNotBlank() && email.isNotBlank() && password.isNotBlank()) {
       networkStatusChecker.performIfConnectedToInternet {
         remoteApi.registerUser(UserDataRequest(email, password, username)) { result ->
-            if (result is Success) {
-              toast(result.data)
-              onRegisterSuccess()
-            } else {
-              onRegisterError()
-            }
+          if (result is Success) {
+            toast(result.data)
+            onRegisterSuccess()
+          } else {
+            onRegisterError()
+          }
         }
       }
     } else {
