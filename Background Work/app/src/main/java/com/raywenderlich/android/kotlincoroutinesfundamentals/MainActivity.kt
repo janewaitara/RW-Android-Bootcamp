@@ -82,15 +82,19 @@ class MainActivity : AppCompatActivity() {
             .setConstraints(constraints)
             .build()
 
+    val sepiaFilterWorker = OneTimeWorkRequestBuilder<SepiaFilterWorker>()
+            .setConstraints(constraints)
+            .build()
 
     //build the worker using workManager and que work
     val workManager = WorkManager.getInstance(this)
     workManager.beginWith(clearFilesWorker)
             .then(downloadRequest)
+            .then(sepiaFilterWorker)
             .enqueue()
 
     //observing the status to know when its done
-    workManager.getWorkInfoByIdLiveData(downloadRequest.id).observe(this, Observer { info->
+    workManager.getWorkInfoByIdLiveData(sepiaFilterWorker.id).observe(this, Observer { info->
       if (info.state.isFinished){
 
         //consuming the output data from the worker hence can download any number of
