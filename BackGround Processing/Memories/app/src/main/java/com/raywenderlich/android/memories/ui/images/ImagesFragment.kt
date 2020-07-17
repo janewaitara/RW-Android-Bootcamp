@@ -40,7 +40,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.work.*
 import com.raywenderlich.android.memories.App
 import com.raywenderlich.android.memories.R
 import com.raywenderlich.android.memories.model.Image
@@ -49,6 +51,7 @@ import com.raywenderlich.android.memories.ui.images.dialog.ImageOptionsDialogFra
 import com.raywenderlich.android.memories.utils.gone
 import com.raywenderlich.android.memories.utils.toast
 import com.raywenderlich.android.memories.utils.visible
+import com.raywenderlich.android.memories.worker.DownloadImageWorker
 import kotlinx.android.synthetic.main.fragment_images.*
 
 /**
@@ -94,13 +97,32 @@ class ImagesFragment : Fragment(), ImageOptionsDialogFragment.ImageOptionsListen
   }
 
   override fun onImageDownload(imageUrl: String) {
+    val constraints = Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.NOT_ROAMING)
+            .setRequiresBatteryNotLow(true)
+            .setRequiresStorageNotLow(true)
+            .build()
+
+    val downloadImageWorker = OneTimeWorkRequestBuilder<DownloadImageWorker>()
+            .setInputData(workDataOf("image_path" to imageUrl))
+            .setConstraints(constraints)
+            .build()
+
+    val workManager = WorkManager.getInstance(requireContext())
+    workManager.enqueue(downloadImageWorker)
+
+    workManager.getWorkInfoByIdLiveData(downloadImageWorker.id).observe(this, Observer { info->
+      if (info?.state?.isFinished == true){
+        activity?.toast("Image downloaded")
+      }
+    })
   }
 
   private fun getAllImages() {
     progress.visible()
 
     onImageUrlsReceived(listOf(Image("https://www.wallpaperup.com/uploads/wallpapers/2013/03/21/55924/3b61c716155c6fa88f321da6d4655767.jpg")))
-
+    return
 //    networkStatusChecker.performIfConnectedToInternet {
 //      GlobalScope.launch(Dispatchers.Main) {
 //        val result = remoteApi.getImages()

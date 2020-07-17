@@ -45,7 +45,7 @@ import retrofit2.Retrofit
  * Builds Retrofit and its components.
  */
 
-private const val BASE_URL = "http://<your-ip>:3000"
+private const val BASE_URL = "http://10.10.1.94:3000"
 
 fun buildApiService(): RemoteApiService = buildRetrofit().create(RemoteApiService::class.java)
 
