@@ -37,7 +37,17 @@ package com.raywenderlich.android.kotlincoroutinesfundamentals
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Observer
+import androidx.work.Constraints
+import androidx.work.NetworkType
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.File
 import java.net.HttpURLConnection
 import java.net.URL
 
@@ -53,16 +63,47 @@ class MainActivity : AppCompatActivity() {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_main)
 
-    Thread(Runnable {
-      val imageUrl = URL("https://wallpaperplay.com/walls/full/1/c/7/38027.jpg")
-      val connection = imageUrl.openConnection() as HttpURLConnection
-      connection.doInput = true
-      connection.connect()
-
-      val inputStream = connection.inputStream
-      val bitmap = BitmapFactory.decodeStream(inputStream)
-      //moved it ot the main thread
-      runOnUiThread { image.setImageBitmap(bitmap) }
-    }).start()
+    downloadImage()
   }
+
+  private fun downloadImage(){
+    //constraint for the worker with conditions
+    val constraints = Constraints.Builder()
+            .setRequiresBatteryNotLow(true)
+            .setRequiresStorageNotLow(true)
+            .setRequiredNetworkType(NetworkType.NOT_ROAMING)
+            .build()
+    //work request
+    val downloadRequest = OneTimeWorkRequestBuilder<DownloadWorker>()
+            .setConstraints(constraints)
+            .build()
+
+    //build the worker using workManager
+    val workManager = WorkManager.getInstance(this)
+    workManager.enqueue(downloadRequest)
+
+    //observing the status to know when its done
+    workManager.getWorkInfoByIdLiveData(downloadRequest.id).observe(this, Observer { info->
+      if (info.state.isFinished){
+        val imageFile = File(externalMediaDirs.first(), "owl_image.jpg")
+        displayImage(imageFile.absolutePath)
+      }
+    })
+
+  }
+
+  private fun displayImage(imagePath: String) {
+    GlobalScope.launch(Dispatchers.Main) {
+      //processing the image in background
+      val bitmap = loadImageFromFile(imagePath)
+      //display the image
+      image.setImageBitmap(bitmap)
+    }
+  }
+
+  private suspend fun loadImageFromFile(imagePath: String) = withContext(Dispatchers.IO){
+    BitmapFactory.decodeFile(imagePath)
+  }
+
+
 }
