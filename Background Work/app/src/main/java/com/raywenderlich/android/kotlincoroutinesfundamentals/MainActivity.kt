@@ -73,20 +73,33 @@ class MainActivity : AppCompatActivity() {
             .setRequiresStorageNotLow(true)
             .setRequiredNetworkType(NetworkType.NOT_ROAMING)
             .build()
+
     //work request
+    val clearFilesWorker = OneTimeWorkRequestBuilder<FileClearWorker>()
+            .build()
+
     val downloadRequest = OneTimeWorkRequestBuilder<DownloadWorker>()
             .setConstraints(constraints)
             .build()
 
-    //build the worker using workManager
+
+    //build the worker using workManager and que work
     val workManager = WorkManager.getInstance(this)
-    workManager.enqueue(downloadRequest)
+    workManager.beginWith(clearFilesWorker)
+            .then(downloadRequest)
+            .enqueue()
 
     //observing the status to know when its done
     workManager.getWorkInfoByIdLiveData(downloadRequest.id).observe(this, Observer { info->
       if (info.state.isFinished){
-        val imageFile = File(externalMediaDirs.first(), "owl_image.jpg")
-        displayImage(imageFile.absolutePath)
+
+        //consuming the output data from the worker hence can download any number of
+        // images and always receive their files through the worker
+        val imagePath = info.outputData.getString("image_path")
+        if (!imagePath.isNullOrBlank()){
+          displayImage(imagePath)
+        }
+
       }
     })
 
