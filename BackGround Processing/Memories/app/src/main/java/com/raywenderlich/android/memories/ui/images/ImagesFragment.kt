@@ -112,7 +112,6 @@ class ImagesFragment : Fragment(), ImageOptionsDialogFragment.ImageOptionsListen
 
     val intent = Intent()
     intent.putExtra("image_path", imageUrl)
-    activity?.startService(intent)
 
     DownloadService.startWork(requireContext(), intent)
 

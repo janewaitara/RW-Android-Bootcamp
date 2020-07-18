@@ -130,4 +130,18 @@ object FileUtils {
             .setAllowedOverMetered(true)
             .setAllowedOverRoaming(false)
   }
+
+
+  fun clearLocalStorage(context: Context) {
+    val rootFolder = context.externalMediaDirs.first()
+
+    rootFolder?.listFiles()?.forEach {
+      if (it.isDirectory) {
+        it.deleteRecursively()
+      } else {
+        it.delete()
+      }
+    }
+  }
+
 }

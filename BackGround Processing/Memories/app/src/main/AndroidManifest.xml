@@ -29,7 +29,10 @@
     </activity>
 
     <service android:name=".service.DownloadService"
-        android:permission="android:permission.BIND_JOB_SERVICE"/>
+        android:permission="android.permission.BIND_JOB_SERVICE"/>
+
+    <service android:name=".service.SynchronizeImagesService"
+        android:permission="android.permission.BIND_JOB_SERVICE" />
   </application>
 
 </manifest>
