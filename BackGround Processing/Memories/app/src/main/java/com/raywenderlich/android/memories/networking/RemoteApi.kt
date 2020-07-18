@@ -34,10 +34,15 @@
 
 package com.raywenderlich.android.memories.networking
 
+import android.util.Log
 import com.raywenderlich.android.memories.model.Image
+import com.raywenderlich.android.memories.model.UploadResponse
 import com.raywenderlich.android.memories.model.result.Failure
 import com.raywenderlich.android.memories.model.result.Result
 import com.raywenderlich.android.memories.model.result.Success
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import java.io.File
 
 /**
  * Holds decoupled logic for all the API calls.
@@ -51,5 +56,17 @@ class RemoteApi(private val apiService: RemoteApiService) {
     Success(data)
   } catch (error: Throwable) {
     Failure(error)
+  }
+
+  suspend fun uploadImage(file: File): UploadResponse{
+    Log.d("UPLOAD", "Ready to Upload ")
+
+    val part: MultipartBody.Part = MultipartBody.Part.createFormData("file",
+            file.name,
+            file.asRequestBody()
+    )
+    Log.d("UPLOAD", "Uploaded ")
+    return apiService.uploadFile(part)
+
   }
 }
