@@ -35,6 +35,7 @@
 package com.raywenderlich.android.memories.ui.images
 
 import android.app.DownloadManager
+import android.content.Intent
 import android.net.ConnectivityManager
 import android.net.Uri
 import android.os.Bundle
@@ -51,6 +52,7 @@ import com.raywenderlich.android.memories.model.Image
 import com.raywenderlich.android.memories.model.result.Success
 import com.raywenderlich.android.memories.networking.BASE_URL
 import com.raywenderlich.android.memories.networking.NetworkStatusChecker
+import com.raywenderlich.android.memories.service.DownloadService
 import com.raywenderlich.android.memories.ui.images.dialog.ImageOptionsDialogFragment
 import com.raywenderlich.android.memories.utils.FileUtils
 import com.raywenderlich.android.memories.utils.gone
@@ -107,7 +109,12 @@ class ImagesFragment : Fragment(), ImageOptionsDialogFragment.ImageOptionsListen
   }
 
   override fun onImageDownload(imageUrl: String) {
-    val constraints = Constraints.Builder()
+
+    val intent = Intent(activity, DownloadService::class.java)
+    intent.putExtra("image_path", imageUrl)
+    activity?.startService(intent)
+
+    /*val constraints = Constraints.Builder()
             .setRequiredNetworkType(NetworkType.NOT_ROAMING)
             .setRequiresBatteryNotLow(true)
             .setRequiresStorageNotLow(true)
@@ -131,7 +138,7 @@ class ImagesFragment : Fragment(), ImageOptionsDialogFragment.ImageOptionsListen
           val file = File(requireContext().externalMediaDirs.first(), imageUrl)
 
           //build a downloadManager request
-          /*   val request = DownloadManager.Request(Uri.parse("$BASE_URL/files/$imageUrl")) //build a request from a Uri
+          *//*   val request = DownloadManager.Request(Uri.parse("$BASE_URL/files/$imageUrl")) //build a request from a Uri
                   .setTitle("Ima Download")
                   .setDescription("Downloading")
                   .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)
@@ -140,14 +147,14 @@ class ImagesFragment : Fragment(), ImageOptionsDialogFragment.ImageOptionsListen
                   .setAllowedOverRoaming(false)
 
           val downloadManager = requireContext().getSystemService(DownloadManager::class.java)
-          downloadManager?.enqueue(request)*/
+          downloadManager?.enqueue(request)*//*
           FileUtils.queueImagesForDownload(requireContext(), arrayOf((imageUrl)))
 
           activity?.toast("Image downloaded")
         }
 
       }
-    })
+    })*/
   }
 
   private fun getAllImages() {

@@ -39,6 +39,7 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.raywenderlich.android.memories.R
+import com.raywenderlich.android.memories.service.DownloadService
 import kotlinx.android.synthetic.main.activity_main.*
 
 
@@ -68,5 +69,11 @@ class MainActivity : AppCompatActivity() {
   private fun initUi() {
     tabs.setupWithViewPager(fragmentPager)
     fragmentPager.adapter = pagerAdapter
+  }
+
+  override fun onStop() {
+    val intent = Intent(this, DownloadService::class.java)
+    stopService(intent) //frees up the resources taken by the services
+    super.onStop()
   }
 }
