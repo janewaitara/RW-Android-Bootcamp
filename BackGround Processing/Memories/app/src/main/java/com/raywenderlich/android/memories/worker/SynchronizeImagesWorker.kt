@@ -12,10 +12,7 @@ class SynchronizeImagesWorker (context: Context, workerParameters: WorkerParamet
         val images = inputData.getStringArray("images") ?: return Result.failure()
 
         //receives a list of images and downloads each image accordingly
-        images.forEach { imagePath->
-            val file = File(applicationContext.externalMediaDirs.first(), imagePath)
-            FileUtils.downloadImage(file, imagePath)
-        }
+        FileUtils.queueImagesForDownload(applicationContext, images)
 
         return Result.success()
     }

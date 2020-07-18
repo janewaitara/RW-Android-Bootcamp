@@ -52,6 +52,7 @@ import com.raywenderlich.android.memories.model.result.Success
 import com.raywenderlich.android.memories.networking.BASE_URL
 import com.raywenderlich.android.memories.networking.NetworkStatusChecker
 import com.raywenderlich.android.memories.ui.images.dialog.ImageOptionsDialogFragment
+import com.raywenderlich.android.memories.utils.FileUtils
 import com.raywenderlich.android.memories.utils.gone
 import com.raywenderlich.android.memories.utils.toast
 import com.raywenderlich.android.memories.utils.visible
@@ -130,7 +131,7 @@ class ImagesFragment : Fragment(), ImageOptionsDialogFragment.ImageOptionsListen
           val file = File(requireContext().externalMediaDirs.first(), imageUrl)
 
           //build a downloadManager request
-          val request = DownloadManager.Request(Uri.parse("$BASE_URL/files/$imageUrl")) //build a request from a Uri
+          /*   val request = DownloadManager.Request(Uri.parse("$BASE_URL/files/$imageUrl")) //build a request from a Uri
                   .setTitle("Ima Download")
                   .setDescription("Downloading")
                   .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)
@@ -139,7 +140,9 @@ class ImagesFragment : Fragment(), ImageOptionsDialogFragment.ImageOptionsListen
                   .setAllowedOverRoaming(false)
 
           val downloadManager = requireContext().getSystemService(DownloadManager::class.java)
-          downloadManager?.enqueue(request)
+          downloadManager?.enqueue(request)*/
+          FileUtils.queueImagesForDownload(requireContext(), arrayOf((imageUrl)))
+
           activity?.toast("Image downloaded")
         }
 
