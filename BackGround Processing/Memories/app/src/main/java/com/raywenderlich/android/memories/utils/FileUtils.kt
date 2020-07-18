@@ -3,7 +3,10 @@ package com.raywenderlich.android.memories.utils
 import android.content.ContentResolver
 import android.content.Context
 import android.net.Uri
+import com.raywenderlich.android.memories.networking.BASE_URL
 import java.io.*
+import java.net.HttpURLConnection
+import java.net.URL
 
 object FileUtils {
 
@@ -76,5 +79,30 @@ object FileUtils {
           context: Context,
           lastSegment: String?): File {
     return File(context.externalCacheDir, "$lastSegment.jpg")
+  }
+
+  fun downloadImage(file: File, imageDownloadPath: String?) {
+
+    val imageUrl = URL("$BASE_URL/files/$imageDownloadPath") //download the image from the server directly
+
+    val connection = imageUrl.openConnection() as HttpURLConnection
+    connection.doInput = true
+    connection.connect()
+
+    val inputStream = connection.inputStream
+
+    //output code to store the bytes into a file
+    val outputStream = FileOutputStream(file)
+    outputStream.use { output->
+      val buffer = ByteArray(4 * 1024)
+      var byteCount = inputStream.read(buffer)
+
+      while (byteCount > 0){
+        output.write(buffer,0,byteCount)
+        byteCount = inputStream.read(buffer)
+      }
+
+      output.flush()
+    }
   }
 }
