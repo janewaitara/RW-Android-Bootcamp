@@ -110,9 +110,11 @@ class ImagesFragment : Fragment(), ImageOptionsDialogFragment.ImageOptionsListen
 
   override fun onImageDownload(imageUrl: String) {
 
-    val intent = Intent(activity, DownloadService::class.java)
+    val intent = Intent()
     intent.putExtra("image_path", imageUrl)
     activity?.startService(intent)
+
+    DownloadService.startWork(requireContext(), intent)
 
     /*val constraints = Constraints.Builder()
             .setRequiredNetworkType(NetworkType.NOT_ROAMING)
