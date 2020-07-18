@@ -34,7 +34,9 @@
 
 package com.raywenderlich.android.memories.ui.images
 
+import android.app.DownloadManager
 import android.net.ConnectivityManager
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -47,6 +49,7 @@ import com.raywenderlich.android.memories.App
 import com.raywenderlich.android.memories.R
 import com.raywenderlich.android.memories.model.Image
 import com.raywenderlich.android.memories.model.result.Success
+import com.raywenderlich.android.memories.networking.BASE_URL
 import com.raywenderlich.android.memories.networking.NetworkStatusChecker
 import com.raywenderlich.android.memories.ui.images.dialog.ImageOptionsDialogFragment
 import com.raywenderlich.android.memories.utils.gone
@@ -58,6 +61,7 @@ import kotlinx.android.synthetic.main.fragment_images.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import java.io.File
 
 /**
  * Fetches and displays notes from the API.
@@ -110,21 +114,35 @@ class ImagesFragment : Fragment(), ImageOptionsDialogFragment.ImageOptionsListen
 
     val imageCheckerWorker = OneTimeWorkRequestBuilder<LocalImageCheckWorker>()
             .setInputData(workDataOf("image_path" to imageUrl))
-            .build()
-
-    val downloadImageWorker = OneTimeWorkRequestBuilder<DownloadImageWorker>()
-            .setInputData(workDataOf("image_path" to imageUrl))
             .setConstraints(constraints)
             .build()
 
     val workManager = WorkManager.getInstance(requireContext())
-    workManager.beginWith(imageCheckerWorker)
-            .then(downloadImageWorker)
-            .enqueue()
+    workManager.enqueue(imageCheckerWorker)
 
-    workManager.getWorkInfoByIdLiveData(downloadImageWorker.id).observe(this, Observer { info->
+
+    workManager.getWorkInfoByIdLiveData(imageCheckerWorker.id).observe(this, Observer { info->
       if (info?.state?.isFinished == true){
-        activity?.toast("Image downloaded")
+        val isDownloaded = info.outputData.getBoolean("is_downloaded", false)
+
+        if (!isDownloaded){
+          //if the file isn't downloaded, create a new file and download the image into that file
+          val file = File(requireContext().externalMediaDirs.first(), imageUrl)
+
+          //build a downloadManager request
+          val request = DownloadManager.Request(Uri.parse("$BASE_URL/files/$imageUrl")) //build a request from a Uri
+                  .setTitle("Ima Download")
+                  .setDescription("Downloading")
+                  .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)
+                  .setDestinationUri(Uri.fromFile(file))
+                  .setAllowedOverMetered(true)
+                  .setAllowedOverRoaming(false)
+
+          val downloadManager = requireContext().getSystemService(DownloadManager::class.java)
+          downloadManager?.enqueue(request)
+          activity?.toast("Image downloaded")
+        }
+
       }
     })
   }
