@@ -54,6 +54,7 @@ import com.raywenderlich.android.memories.model.Image
 import com.raywenderlich.android.memories.model.result.Success
 import com.raywenderlich.android.memories.networking.NetworkStatusChecker
 import com.raywenderlich.android.memories.service.SynchronizeImagesService
+import com.raywenderlich.android.memories.service.UploadImagesService
 import com.raywenderlich.android.memories.utils.FileUtils
 import com.raywenderlich.android.memories.utils.toast
 import com.raywenderlich.android.memories.worker.ClearLocalStorageWorker
@@ -124,11 +125,10 @@ class SettingsFragment : Fragment() {
               context.contentResolver,
               context)
 
-      val worker = OneTimeWorkRequestBuilder<UploadImageWorker>()
-              .setInputData(workDataOf("image_path" to fileUri))
-              .build()
-      WorkManager.getInstance(context)
-              .enqueue(worker)
+      val intent = Intent().apply {
+        putExtra("image_path", fileUri)
+      }
+      UploadImagesService.startWork(requireContext(), intent)
 
     }
   }

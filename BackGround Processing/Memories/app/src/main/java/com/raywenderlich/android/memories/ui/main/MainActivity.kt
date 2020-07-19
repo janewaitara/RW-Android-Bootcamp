@@ -40,9 +40,7 @@ import android.content.IntentFilter
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.raywenderlich.android.memories.R
-import com.raywenderlich.android.memories.service.ACTION_IMAGES_SYNCHRONIZED
-import com.raywenderlich.android.memories.service.DownloadService
-import com.raywenderlich.android.memories.service.SynchronizeImagesReceiver
+import com.raywenderlich.android.memories.service.*
 import com.raywenderlich.android.memories.utils.toast
 import kotlinx.android.synthetic.main.activity_main.*
 
@@ -54,9 +52,14 @@ class MainActivity : AppCompatActivity() {
 
   private val pagerAdapter by lazy { MainPagerAdapter(supportFragmentManager) }
 
-  private val receiver by lazy {
+  private val synchronizeImagesReceiver by lazy {
     SynchronizeImagesReceiver{
       toast("Images synchronized")
+    }
+  }
+  private val uploadImagesReceiver by lazy {
+    UploadImageReceiver{isUploaded->
+      toast(if (isUploaded)"Image Uploaded!" else "upload failed!")
     }
   }
 
@@ -79,9 +82,14 @@ class MainActivity : AppCompatActivity() {
   override fun onStart() {
     super.onStart()
     //register a receiver with an intent filter that listens to the action you defined
-    registerReceiver(receiver, IntentFilter().apply {
+    registerReceiver(synchronizeImagesReceiver, IntentFilter().apply {
       addAction(ACTION_IMAGES_SYNCHRONIZED)
     })
+    registerReceiver(uploadImagesReceiver, IntentFilter().apply {
+      addAction(ACTION_IMAGE_UPLOAD)
+    })
+
+
   }
 
   private fun initUi() {
@@ -92,7 +100,8 @@ class MainActivity : AppCompatActivity() {
   override fun onStop() {
     val intent = Intent(this, DownloadService::class.java)
     stopService(intent) //frees up the resources taken by the services
-    unregisterReceiver(receiver)//unregister the receiver once the activity stops
+    unregisterReceiver(synchronizeImagesReceiver)//unregister the receiver once the activity stops
+    unregisterReceiver(uploadImagesReceiver)//unregister the receiver once the activity stops
     super.onStop()
   }
 }
