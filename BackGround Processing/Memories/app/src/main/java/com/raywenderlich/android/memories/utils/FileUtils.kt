@@ -106,7 +106,7 @@ object FileUtils {
       output.flush()
     }
   }
-//prepare the download manager and iterate over the files preparing the request for the manager
+//immediately download images
   fun queueImagesForDownload(context: Context, images: Array<String>){
     if (images.isNotEmpty()){
      images.forEach { imageUrl->

@@ -35,10 +35,10 @@ class SynchronizeImagesService: Service() {
     }
 
     private fun showNotification() {
-        //incase the android api level is oreo or higher
+        //in case the android api level is oreo or higher
         createNotificationChannel()
 
-        //updates the main activity with anew intent if clicked
+        //updates the main activity with a new intent if clicked
         val notificationIntent = Intent(this, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
         }
@@ -60,7 +60,7 @@ class SynchronizeImagesService: Service() {
             val serviceChannel = NotificationChannel(
                     NOTIFICATION_CHANNEL_ID,
                     NOTIFICATION_CHANNEL_NAME,
-                    NotificationManager.IMPORTANCE_DEFAULT
+                    NotificationManager.IMPORTANCE_DEFAULT //visibility
             )
             val manager = getSystemService(NotificationManager::class.java)
             manager?.createNotificationChannel(serviceChannel)
@@ -77,6 +77,13 @@ class SynchronizeImagesService: Service() {
                 val imagesArray = result.data.map { it.imagePath }.toTypedArray()
                 //queueing work in the downloadManager
                 FileUtils.queueImagesForDownload(applicationContext, imagesArray)
+                //stop foreground notification
+                stopForeground(true)
+                //once images are downloaded, the notification will be removed and the service will stop being in the foreground
+                //send the broadcast with the action defined in the receiver
+                sendBroadcast(Intent().apply {
+                    action = ACTION_IMAGES_SYNCHRONIZED
+                })
             }
         }
     }
