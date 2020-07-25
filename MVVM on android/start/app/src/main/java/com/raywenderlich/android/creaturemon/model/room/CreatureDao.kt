@@ -44,5 +44,5 @@ interface CreatureDao{
     fun clearCreatures(vararg creature: Creature)
 
     @Query("SELECT * FROM creature_table ORDER BY name ASC ")
-    fun getAllCretures(): LiveData<List<Creature>>
+    fun getAllCreatures(): LiveData<List<Creature>>
 }

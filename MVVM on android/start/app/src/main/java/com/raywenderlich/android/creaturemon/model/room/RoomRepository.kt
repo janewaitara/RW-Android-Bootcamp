@@ -43,7 +43,7 @@ class RoomRepository : CreatureRepository {
   private val allCreatures: LiveData<List<Creature>>
 
   init {
-      allCreatures = creatureDao.getAllCretures()
+      allCreatures = creatureDao.getAllCreatures()
   }
 
   private class InsertAsyncTask internal constructor(private val dao: CreatureDao) : AsyncTask<Creature, Void, Void>() {

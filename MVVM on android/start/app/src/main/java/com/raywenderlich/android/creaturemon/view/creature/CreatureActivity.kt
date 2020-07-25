@@ -30,6 +30,8 @@
 
 package com.raywenderlich.android.creaturemon.view.creature
 
+import android.arch.lifecycle.Observer
+import android.arch.lifecycle.ViewModelProviders
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.text.Editable
@@ -39,30 +41,41 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import com.raywenderlich.android.creaturemon.R
 import com.raywenderlich.android.creaturemon.model.AttributeStore
+import com.raywenderlich.android.creaturemon.model.AttributeType
 import com.raywenderlich.android.creaturemon.model.AttributeValue
 import com.raywenderlich.android.creaturemon.model.Avatar
 import com.raywenderlich.android.creaturemon.view.avatars.AvatarAdapter
 import com.raywenderlich.android.creaturemon.view.avatars.AvatarBottomDialogFragment
+import com.raywenderlich.android.creaturemon.viewModel.CreatureViewModel
 import kotlinx.android.synthetic.main.activity_creature.*
 
 
 class CreatureActivity : AppCompatActivity(), AvatarAdapter.AvatarListener {
 
+  private lateinit var viewModel : CreatureViewModel
+
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_creature)
+
+    /**To connect to the viewModel, we use providers*/
+    viewModel = ViewModelProviders.of(this).get(CreatureViewModel::class.java)
 
     configureUI()
     configureSpinnerAdapters()
     configureSpinnerListeners()
     configureEditText()
     configureClickListeners()
+    configureLiveDataObservers()
   }
 
+  /**Sets up the back button and title*/
   private fun configureUI() {
     supportActionBar?.setDisplayHomeAsUpEnabled(true)
     title = getString(R.string.add_creature)
-    // TODO: hide label
+
+    if (viewModel.drawable != 0) hideTapLabel()
+
   }
 
   private fun configureSpinnerAdapters() {
@@ -77,19 +90,19 @@ class CreatureActivity : AppCompatActivity(), AvatarAdapter.AvatarListener {
   private fun configureSpinnerListeners() {
     intelligence.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
       override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-        // TODO: handle selection
+        viewModel.attributesSelected(AttributeType.INTELLIGENCE,position)
       }
       override fun onNothingSelected(parent: AdapterView<*>?) {}
     }
     strength.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
       override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-        // TODO: handle selection
+        viewModel.attributesSelected(AttributeType.STRENGTH,position)
       }
       override fun onNothingSelected(parent: AdapterView<*>?) {}
     }
     endurance.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
       override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-        // TODO: handle selection
+        viewModel.attributesSelected(AttributeType.ENDURANCE,position)
       }
       override fun onNothingSelected(parent: AdapterView<*>?) {}
     }
@@ -100,7 +113,9 @@ class CreatureActivity : AppCompatActivity(), AvatarAdapter.AvatarListener {
       override fun afterTextChanged(s: Editable?) {}
       override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
       override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-        // TODO: handle text changed
+
+        //update the viewModel name value
+        viewModel.name = s.toString()
       }
     })
   }
@@ -117,11 +132,27 @@ class CreatureActivity : AppCompatActivity(), AvatarAdapter.AvatarListener {
   }
 
   override fun avatarClicked(avatar: Avatar) {
-    // TODO: handle avatar clicked
+    viewModel.drawableSelected(avatar.drawable) //setting the value of the drawable
     hideTapLabel()
   }
 
   private fun hideTapLabel() {
     tapLabel.visibility = View.INVISIBLE
   }
+
+  /**
+   * Handle events sent over the liveData from the viewModel
+   * */
+
+  fun configureLiveDataObservers(){
+    viewModel.getCreatureLiveData().observe(this, Observer { creature->
+      creature?.let {
+        hitPoints.text = creature.hitPoints.toString()
+        avatarImageView.setImageResource(creature.drawable)
+        nameEditText.setText(creature.name)
+      }
+
+    })
+  }
+
 }
