@@ -27,4 +27,5 @@ class CreatureGeneratorTest {
         assertEquals(expectedCreature,creatureGenerator.generateCreature(attributes,name))
 
     }
+
 }

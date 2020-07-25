@@ -4,6 +4,7 @@ import android.arch.core.executor.testing.InstantTaskExecutorRule
 import com.raywenderlich.android.creaturemon.model.Creature
 import com.raywenderlich.android.creaturemon.model.CreatureAttributes
 import com.raywenderlich.android.creaturemon.model.CreatureGenerator
+import com.raywenderlich.android.creaturemon.model.CreatureRepository
 import junit.framework.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
@@ -24,12 +25,17 @@ class CreatureViewModelTest{
     //property for the mock creatureGenerator for the viewModel
     @Mock
     lateinit var mockGenerator: CreatureGenerator
-    
+
+    //property for the mock roomRepository for the viewModel
+    @Mock
+    lateinit var repository: CreatureRepository
+
+
     @Before
     fun setup(){
         // init the mocks and setup the creature viewModel to be tested 
         MockitoAnnotations.initMocks(this)
-        creatureViewModel = CreatureViewModel(mockGenerator)
+        creatureViewModel = CreatureViewModel(mockGenerator, repository)
     }
     //test to setup the creature being generated in the viewModel
     @Test
@@ -49,8 +55,21 @@ class CreatureViewModelTest{
         creatureViewModel.updateCreature()
 
         //assert whether the viewModel creature is the stubCreature we are expecting
-        assertEquals(creatureViewModel.creature, stubCreature)
+        assertEquals( stubCreature, creatureViewModel.creature)
 
+    }
+
+    //test to save creature with blank attributes - names can't be saved
+    @Test
+    fun testCantSaveCreatureWithBlankName(){
+        creatureViewModel.intelligence = 10
+        creatureViewModel.strength = 3
+        creatureViewModel.endurance = 7
+        creatureViewModel.drawable = 1
+        creatureViewModel.name = ""
+
+        val canSaveCreature = creatureViewModel.canSaveCreature()
+        assertEquals(false,canSaveCreature)
     }
 
 
