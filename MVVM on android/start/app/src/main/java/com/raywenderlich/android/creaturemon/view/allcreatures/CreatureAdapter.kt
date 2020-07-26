@@ -63,7 +63,11 @@ class CreatureAdapter(private val creatures: MutableList<Creature>)
 
     fun bind(creature: Creature) {
       this.creature = creature
-      // TODO: populate views
+      /**
+       * populate views*/
+      itemView.avatarListItem.setImageDrawable(itemView.context.getDrawable(creature.drawable))
+      itemView.name.text = creature.name
+      itemView.hitPoints.text = creature.hitPoints.toString()
     }
   }
 }

@@ -72,5 +72,18 @@ class CreatureViewModelTest{
         assertEquals(false,canSaveCreature)
     }
 
+    //test to save creature with blank attributes - strength can't be saved
+    @Test
+    fun testCantSaveCreatureWithoutStrength(){
+        creatureViewModel.intelligence = 10
+        creatureViewModel.strength = 0
+        creatureViewModel.endurance = 7
+        creatureViewModel.drawable = 1
+        creatureViewModel.name = "Home Cow"
+
+        val canSaveCreature = creatureViewModel.canSaveCreature()
+        assertEquals(false,canSaveCreature)
+    }
+
 
 }
