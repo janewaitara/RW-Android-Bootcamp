@@ -3,6 +3,7 @@ package com.raywenderlich.android.creaturemon.viewModel
 import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.ViewModel
+import android.databinding.ObservableField
 import com.raywenderlich.android.creaturemon.model.*
 import com.raywenderlich.android.creaturemon.model.room.RoomRepository
 import java.text.FieldPosition
@@ -16,8 +17,16 @@ class CreatureViewModel(private val generator: CreatureGenerator = CreatureGener
     fun getCreatureLiveData(): LiveData<Creature> = creatureLiveData
 
     /**
+     * Help to communicate back when the save of a creature is complete
+     * Save liveData property to handle communication*/
+    private val saveLiveData = MutableLiveData<Boolean>()
+
+    fun getSaveLiveData(): LiveData<Boolean> = saveLiveData
+
+
+    /**
      * Properties for the generated creature*/
-    var name = ""
+    var name = ObservableField<String>("")
     var intelligence = 0
     var strength = 0
     var endurance = 0
@@ -27,7 +36,7 @@ class CreatureViewModel(private val generator: CreatureGenerator = CreatureGener
 
     fun updateCreature(){
         val attributes = CreatureAttributes(intelligence, strength, endurance)
-        creature = generator.generateCreature(attributes, name, drawable)
+        creature = generator.generateCreature(attributes, name.get() ?: "", drawable)
         creatureLiveData.postValue(creature)
     }
     /**
@@ -58,18 +67,23 @@ class CreatureViewModel(private val generator: CreatureGenerator = CreatureGener
     }
 
     fun canSaveCreature():Boolean{
-        return intelligence != 0&& strength != 0 &&endurance != 0 &&
-                name.isNotEmpty() && drawable != 0
+        //extracting the name from observableField and use let to handle the null case
+        val name = this.name.get()
+        name?.let {
+            return intelligence != 0 && strength != 0 && endurance != 0 &&
+                    name.isNotEmpty() && drawable != 0
+        }
+        return false
     }
 
     /**
      * Saves creature to the repository if it can be saved*/
-    fun saveCreature(): Boolean{
+    fun saveCreature(){
         return if (canSaveCreature()){
             repository.saveCreature(creature)
-            true
+            saveLiveData.postValue(true)
         }else{
-            false
+            saveLiveData.postValue(false)
         }
     }
 
