@@ -22,10 +22,28 @@
 package com.raywenderlich.spacedaily
 
 import android.app.Application
+import com.raywenderlich.spacedaily.di.appModule
+import com.raywenderlich.spacedaily.di.networkModule
+import org.koin.android.ext.android.inject
+import org.koin.android.ext.koin.androidContext
+import org.koin.android.ext.koin.androidLogger
+import org.koin.core.context.startKoin
 
 class SpaceApp : Application() {
+  /**since the application class is the only class in android that can register an activity listener, we do that here
+   *
+   * First: We use koin to inject the listener*/
+
+  val defaultCurrentActivityListener: DefaultCurrentActivityListener by inject ()
 
   override fun onCreate() {
     super.onCreate()
+    startKoin {
+      androidLogger()
+      androidContext(this@SpaceApp)
+      modules(listOf(networkModule, appModule))
+    }
+
+    registerActivityLifecycleCallbacks(defaultCurrentActivityListener) //is called every time an activity is added or removed
   }
 }
