@@ -32,13 +32,15 @@
 package com.raywenderlich.android.foodmart.ui.cart
 
 import android.animation.ObjectAnimator
-import android.animation.ValueAnimator
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.view.View
+import android.view.animation.AccelerateDecelerateInterpolator
+import android.view.animation.BounceInterpolator
+import android.view.animation.OvershootInterpolator
 import com.raywenderlich.android.foodmart.R
 import com.raywenderlich.android.foodmart.model.Food
 import com.raywenderlich.android.foodmart.model.events.CartDeleteItemEvent
@@ -139,11 +141,13 @@ class CartActivity : AppCompatActivity(), CartContract.View, CartAdapter.CartAda
       paymentMethodContainer.translationY = animatedValue
     }
   }*/
+
   /**Object Animator*/
   private fun animatePaymentMethodContainer(startValue: Float, endValue: Float){
     //animates the paymentContainer from bottom of screen to normal position, add duration for the animation and call start
     val animator = ObjectAnimator.ofFloat(paymentMethodContainer,"translationY",startValue,endValue)
     animator.duration = 500 //in milli seconds
+    animator.interpolator = AccelerateDecelerateInterpolator()//interpolator
     animator.start()
   }
 
