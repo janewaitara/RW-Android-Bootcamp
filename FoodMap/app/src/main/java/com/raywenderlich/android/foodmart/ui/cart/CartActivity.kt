@@ -31,6 +31,8 @@
 
 package com.raywenderlich.android.foodmart.ui.cart
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
 import android.animation.ObjectAnimator
 import android.content.Context
 import android.content.Intent
@@ -38,6 +40,7 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.view.View
+import android.view.ViewAnimationUtils
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.animation.BounceInterpolator
 import android.view.animation.OvershootInterpolator
@@ -152,12 +155,40 @@ class CartActivity : AppCompatActivity(), CartContract.View, CartAdapter.CartAda
   }
 
   private fun animateShowPaymentMethodContainer(){
-    paymentMethodContainer.visibility = View.VISIBLE
+   /* paymentMethodContainer.visibility = View.VISIBLE
     animatePaymentMethodContainer(paymentMethodContainer.height.toFloat(), 0f)
+    */
+
+    val clipInfo = PaymentMethodClipInfo()
+    val circularAnim = ViewAnimationUtils.createCircularReveal(
+            paymentMethodContainer,clipInfo.x,clipInfo.y,0f, clipInfo.radius)
+    paymentMethodContainer.visibility = View.VISIBLE
+    circularAnim.start()
+
   }
 
   private fun animateHidePaymentMethodContainer(){
-    animatePaymentMethodContainer(0f, paymentMethodContainer.height.toFloat())
+    /*animatePaymentMethodContainer(0f, paymentMethodContainer.height.toFloat())*/
+
+    val clipInfo = PaymentMethodClipInfo()
+    val circularAnim = ViewAnimationUtils.createCircularReveal(
+            paymentMethodContainer,clipInfo.x,clipInfo.y, clipInfo.radius, 0f)
+
+    //listener to hide the container when the circular reveal animation ends
+    circularAnim.addListener(object: AnimatorListenerAdapter(){
+      override fun onAnimationEnd(animation: Animator?) {
+        super.onAnimationEnd(animation)
+        paymentMethodContainer.visibility = View.INVISIBLE
+      }
+    })
+    circularAnim.start()
+  }
+
+  //nested inner class that will define clipping info for our circular reveal
+  private inner class PaymentMethodClipInfo{
+    val x = paymentMethodContainer.width / 2
+    val y = paymentMethodContainer.height - checkoutButton.height
+    val radius = Math.hypot(x.toDouble(), y.toDouble()).toFloat()
   }
 
 }
