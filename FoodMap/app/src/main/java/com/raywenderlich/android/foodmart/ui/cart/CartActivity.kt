@@ -31,6 +31,7 @@
 
 package com.raywenderlich.android.foodmart.ui.cart
 
+import android.animation.ValueAnimator
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -103,13 +104,11 @@ class CartActivity : AppCompatActivity(), CartContract.View, CartAdapter.CartAda
 
   @Suppress("UNUSED_PARAMETER")
   fun showPaymentMethods(view: View) {
-    checkoutButton.visibility = View.INVISIBLE
-    paymentMethodContainer.visibility = View.VISIBLE
+    animatePaymentMethodContainer()
   }
 
   @Suppress("UNUSED_PARAMETER")
   fun closePaymentMethods(view: View) {
-    checkoutButton.visibility = View.VISIBLE
     paymentMethodContainer.visibility = View.INVISIBLE
   }
 
@@ -122,5 +121,21 @@ class CartActivity : AppCompatActivity(), CartContract.View, CartAdapter.CartAda
   fun onCartDeleteItemEvent(event: CartDeleteItemEvent) {
     adapter.notifyItemRemoved(event.position)
     presenter.loadCart(false)
+  }
+
+  /**Value Animator*/
+  private fun animatePaymentMethodContainer(){
+    paymentMethodContainer.visibility = View.VISIBLE
+
+    //animates the paymentContainer from bottom of screen to normal position, add duration for the animation and call start
+    val animator = ValueAnimator.ofFloat(paymentMethodContainer.height.toFloat(), 0f)
+    animator.duration = 500 //in milli seconds
+    animator.start()
+
+    //to respond to changing values, create a listener for the animator and set the translationY on the container based on the animated value
+    animator.addUpdateListener { updatedAnimation->
+      val animatedValue = updatedAnimation.animatedValue as Float
+      paymentMethodContainer.translationY = animatedValue
+    }
   }
 }
