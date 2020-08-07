@@ -169,9 +169,21 @@ class ItemsActivity : AppCompatActivity(), ItemsContract.View, ItemsAdapter.Item
      * Animator Set*/
     AnimatorSet().apply {
       play(xAnimator).with(yAnimator).with(alphaAnimator)
+
+      cartButton.isEnabled = false
+      /**
+       * Animator Listener before starting the animator set*/
+      addListener(object : AnimatorListenerAdapter(){
+
+        override fun onAnimationEnd(p0: Animator?) {
+          presenter.addItem(item)
+          itemsRootView.removeView(viewToAnimate)
+          cartButton.isEnabled = true
+        }
+      })
       start()
     }
-    presenter.addItem(item)
+
   }
 
   //get position of helper
