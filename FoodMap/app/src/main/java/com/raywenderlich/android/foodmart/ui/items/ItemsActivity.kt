@@ -199,11 +199,16 @@ class ItemsActivity : AppCompatActivity(), ItemsContract.View, ItemsAdapter.Item
     val foodImage = view.findViewById<ImageView>(R.id.foodImage)
     val imagePair = Pair.create(foodImage as View, "tImage")
 
+    //create a pair for the name to be transitioned using the transition name attribute set
+    val foodName = view.findViewById<TextView>(R.id.name)
+    val namePair = Pair.create(foodName as View, "tName")
+
+
     /**
      * To execute activity transition,
      * create the animation using makeSceneTransitionAnimation from ActivityOptionsCompat
      * then call start Activity from ActivityCompat*/
-    val options = ActivityOptionsCompat.makeSceneTransitionAnimation(this, imagePair)
+    val options = ActivityOptionsCompat.makeSceneTransitionAnimation(this, imagePair,namePair )
     ActivityCompat.startActivity(this,FoodActivity.newIntent(this, food.id) ,options.toBundle())
 
   }

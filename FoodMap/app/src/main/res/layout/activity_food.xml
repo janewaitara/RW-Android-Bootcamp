@@ -88,13 +88,16 @@
           android:orientation="vertical">
 
           <TextView
-            android:id="@+id/foodName"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="@dimen/padding_standard"
-            android:layout_marginRight="@dimen/padding_standard"
-            android:layout_marginTop="@dimen/padding_standard"
-            android:textAppearance="@style/TextAppearance.AppCompat.Headline" />
+              android:id="@+id/foodName"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:layout_marginLeft="@dimen/padding_standard"
+              android:layout_marginTop="@dimen/padding_standard"
+              android:layout_marginRight="@dimen/padding_standard"
+              android:textStyle="bold"
+              android:textColor="@android:color/black"
+              android:textSize="@dimen/food_name_text_size"
+              android:transitionName="tName" />
 
           <TextView
             android:id="@+id/foodDescription"
