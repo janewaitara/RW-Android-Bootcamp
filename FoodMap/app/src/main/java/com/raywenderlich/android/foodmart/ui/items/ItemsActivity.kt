@@ -35,7 +35,11 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
+import android.app.ActivityOptions
 import android.os.Bundle
+import android.support.v4.app.ActivityCompat
+import android.support.v4.app.ActivityOptionsCompat
+import android.support.v4.util.Pair
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.util.Property
@@ -43,8 +47,6 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.animation.AccelerateDecelerateInterpolator
-import android.view.animation.AnimationSet
-import android.view.animation.BounceInterpolator
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
@@ -54,6 +56,7 @@ import com.raywenderlich.android.foodmart.model.events.CartEvent
 import com.raywenderlich.android.foodmart.ui.Injection
 import com.raywenderlich.android.foodmart.ui.cart.CartActivity
 import com.raywenderlich.android.foodmart.ui.categories.CategoriesActivity
+import com.raywenderlich.android.foodmart.ui.detail.FoodActivity
 import kotlinx.android.synthetic.main.activity_items.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
@@ -187,6 +190,22 @@ class ItemsActivity : AppCompatActivity(), ItemsContract.View, ItemsAdapter.Item
       })
       start()
     }
+  }
+
+  /**
+   * Activity transition(Shared Element Transition)*/
+  override fun showFoodDetail(view: View, food: Food) {
+    //create a pair for the image to be transitioned using the transition name attribute set
+    val foodImage = view.findViewById<ImageView>(R.id.foodImage)
+    val imagePair = Pair.create(foodImage as View, "tImage")
+
+    /**
+     * To execute activity transition,
+     * create the animation using makeSceneTransitionAnimation from ActivityOptionsCompat
+     * then call start Activity from ActivityCompat*/
+    val options = ActivityOptionsCompat.makeSceneTransitionAnimation(this, imagePair)
+    ActivityCompat.startActivity(this,FoodActivity.newIntent(this, food.id) ,options.toBundle())
+
   }
 
   //get position of helper

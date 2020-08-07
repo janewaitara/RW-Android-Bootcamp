@@ -126,6 +126,11 @@ class FoodActivity : AppCompatActivity(), FoodContract.View {
     EventBus.getDefault().unregister(this)
   }
 
+  override fun onBackPressed() {
+    super.onBackPressed()
+    fab.visibility = View.GONE
+  }
+
   @Suppress("UNUSED_PARAMETER")
   @Subscribe(threadMode = ThreadMode.MAIN)
   fun onCartEvent(event: CartEvent) {
