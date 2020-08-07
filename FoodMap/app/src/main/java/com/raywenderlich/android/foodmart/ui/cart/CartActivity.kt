@@ -31,6 +31,7 @@
 
 package com.raywenderlich.android.foodmart.ui.cart
 
+import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
 import android.content.Context
 import android.content.Intent
@@ -104,12 +105,12 @@ class CartActivity : AppCompatActivity(), CartContract.View, CartAdapter.CartAda
 
   @Suppress("UNUSED_PARAMETER")
   fun showPaymentMethods(view: View) {
-    animatePaymentMethodContainer()
+    animateShowPaymentMethodContainer()
   }
 
   @Suppress("UNUSED_PARAMETER")
   fun closePaymentMethods(view: View) {
-    paymentMethodContainer.visibility = View.INVISIBLE
+    animateHidePaymentMethodContainer()
   }
 
   @Suppress("UNUSED_PARAMETER")
@@ -124,7 +125,7 @@ class CartActivity : AppCompatActivity(), CartContract.View, CartAdapter.CartAda
   }
 
   /**Value Animator*/
-  private fun animatePaymentMethodContainer(){
+ /* private fun animatePaymentMethodContainer(){
     paymentMethodContainer.visibility = View.VISIBLE
 
     //animates the paymentContainer from bottom of screen to normal position, add duration for the animation and call start
@@ -137,5 +138,22 @@ class CartActivity : AppCompatActivity(), CartContract.View, CartAdapter.CartAda
       val animatedValue = updatedAnimation.animatedValue as Float
       paymentMethodContainer.translationY = animatedValue
     }
+  }*/
+  /**Object Animator*/
+  private fun animatePaymentMethodContainer(startValue: Float, endValue: Float){
+    //animates the paymentContainer from bottom of screen to normal position, add duration for the animation and call start
+    val animator = ObjectAnimator.ofFloat(paymentMethodContainer,"translationY",startValue,endValue)
+    animator.duration = 500 //in milli seconds
+    animator.start()
   }
+
+  private fun animateShowPaymentMethodContainer(){
+    paymentMethodContainer.visibility = View.VISIBLE
+    animatePaymentMethodContainer(paymentMethodContainer.height.toFloat(), 0f)
+  }
+
+  private fun animateHidePaymentMethodContainer(){
+    animatePaymentMethodContainer(0f, paymentMethodContainer.height.toFloat())
+  }
+
 }
