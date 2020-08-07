@@ -229,6 +229,7 @@ class ItemsActivity : AppCompatActivity(), ItemsContract.View, ItemsAdapter.Item
     return animator
   }
 
+  /**Animator Set*/
   private fun animateItemCountCircle(){
 
     val iconScaleAnimatorX = objectAnimatorOfFloatForCountCircle(itemCountCircle, View.SCALE_X,

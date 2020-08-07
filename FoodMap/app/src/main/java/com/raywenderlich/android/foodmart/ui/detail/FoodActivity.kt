@@ -37,6 +37,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
+import android.view.animation.AnimationUtils
 import com.raywenderlich.android.foodmart.R
 import com.raywenderlich.android.foodmart.app.toast
 import com.raywenderlich.android.foodmart.model.events.CartEvent
@@ -88,6 +89,11 @@ class FoodActivity : AppCompatActivity(), FoodContract.View {
         } else {
           presenter.addItem(food)
         }
+      }
+
+      foodImage.setOnClickListener {
+        val rotateAnimation = AnimationUtils.loadAnimation(this, R.anim.rotate)
+        foodImage.startAnimation(rotateAnimation)
       }
     }
   }
