@@ -38,11 +38,13 @@ import android.animation.ObjectAnimator
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
+import android.util.Property
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.animation.AnimationSet
+import android.view.animation.BounceInterpolator
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
@@ -143,6 +145,7 @@ class ItemsActivity : AppCompatActivity(), ItemsContract.View, ItemsAdapter.Item
 
   override fun removeItem(item: Food) {
     presenter.removeItem(item)
+    animateItemCountCircle()
   }
 
   override fun addItem(item: Food, foodImageView: ImageView, cartButton: ImageView) {
@@ -176,6 +179,7 @@ class ItemsActivity : AppCompatActivity(), ItemsContract.View, ItemsAdapter.Item
       addListener(object : AnimatorListenerAdapter(){
 
         override fun onAnimationEnd(p0: Animator?) {
+          animateItemCountCircle()
           presenter.addItem(item)
           itemsRootView.removeView(viewToAnimate)
           cartButton.isEnabled = true
@@ -183,7 +187,6 @@ class ItemsActivity : AppCompatActivity(), ItemsContract.View, ItemsAdapter.Item
       })
       start()
     }
-
   }
 
   //get position of helper
@@ -216,6 +219,30 @@ class ItemsActivity : AppCompatActivity(), ItemsContract.View, ItemsAdapter.Item
     animator.duration = DURATION
     return animator
   }
+  //helper method to return ObjectAnimator
+  private fun objectAnimatorOfFloatForCountCircle(view: FrameLayout?, propertyName: Property<View, Float>, startValue: Float, endValue: Float): ObjectAnimator{
+    val animator = ObjectAnimator.ofFloat(view, propertyName, startValue, endValue)
+    //animator.interpolator = BounceInterpolator()
+    animator.duration = 200L
+    animator.repeatCount = 1
+    animator.repeatMode = ObjectAnimator.REVERSE
+    return animator
+  }
+
+  private fun animateItemCountCircle(){
+
+    val iconScaleAnimatorX = objectAnimatorOfFloatForCountCircle(itemCountCircle, View.SCALE_X,
+            1f,1.5f)
+    val iconScaleAnimatorY = objectAnimatorOfFloatForCountCircle(itemCountCircle, View.SCALE_Y,
+            1f,1.5f)
+
+    AnimatorSet().apply {
+      play(iconScaleAnimatorX).with(iconScaleAnimatorY)
+      start()
+    }
+
+  }
+
 
   @Suppress("UNUSED_PARAMETER")
   @Subscribe(threadMode = ThreadMode.MAIN)
