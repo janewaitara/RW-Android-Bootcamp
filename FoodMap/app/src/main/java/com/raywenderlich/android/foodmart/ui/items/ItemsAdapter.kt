@@ -75,7 +75,7 @@ class ItemsAdapter(private val items: MutableList<Food>, private val listener: I
       itemView.cartButton.setImageResource(if (item.isInCart) R.drawable.ic_done else R.drawable.ic_add)
       itemView.cartButton.setOnClickListener {
         if (item.isInCart) {
-          listener.removeItem(item)
+          listener.removeItem(item, itemView.cartButton)
         } else {
           listener.addItem(item, itemView.foodImage, itemView.cartButton)
         }
@@ -88,7 +88,7 @@ class ItemsAdapter(private val items: MutableList<Food>, private val listener: I
   }
 
   interface ItemsAdapterListener {
-    fun removeItem(item: Food)
+    fun removeItem(item: Food, cartButton: ImageView)
     fun addItem(item: Food, foodImageView: ImageView, cartButton: ImageView)
     fun showFoodDetail(view: View, food: Food)
   }

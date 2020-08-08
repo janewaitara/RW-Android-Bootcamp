@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <animated-vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:drawable="@drawable/ic_done">
+    android:drawable="@drawable/ic_add">
 
     <target
         android:animation="@animator/path_morph_reverse"
-        android:name="small_vertical_line"/>
+        android:name="sm_vertical_line"/>
     <target
         android:animation="@animator/path_morph_lg_reverse"
-        android:name="long_vertical_line"/>
+        android:name="lg_vertical_line"/>
     <target
         android:animation="@animator/fade_in"
         android:name="horizontal_line"/>

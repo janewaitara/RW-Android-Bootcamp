@@ -35,7 +35,7 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
-import android.app.ActivityOptions
+import android.graphics.drawable.Animatable
 import android.os.Bundle
 import android.support.v4.app.ActivityCompat
 import android.support.v4.app.ActivityOptionsCompat
@@ -146,9 +146,17 @@ class ItemsActivity : AppCompatActivity(), ItemsContract.View, ItemsAdapter.Item
     adapter.updateItems(items)
   }
 
-  override fun removeItem(item: Food) {
-    presenter.removeItem(item)
-    animateItemCountCircle()
+  override fun removeItem(item: Food, cartButton: ImageView) {
+    animateCartButton(cartButton, false)
+
+    cartIconAnimatorSet().apply {
+      addListener(object: AnimatorListenerAdapter(){
+        override fun onAnimationEnd(animation: Animator?) {
+          presenter.removeItem(item)
+        }
+      })
+      start()
+    }
   }
 
   override fun addItem(item: Food, foodImageView: ImageView, cartButton: ImageView) {
@@ -182,7 +190,7 @@ class ItemsActivity : AppCompatActivity(), ItemsContract.View, ItemsAdapter.Item
       addListener(object : AnimatorListenerAdapter(){
 
         override fun onAnimationEnd(p0: Animator?) {
-          animateItemCountCircle()
+          cartIconAnimatorSet().start()
           presenter.addItem(item)
           itemsRootView.removeView(viewToAnimate)
           cartButton.isEnabled = true
@@ -190,6 +198,14 @@ class ItemsActivity : AppCompatActivity(), ItemsContract.View, ItemsAdapter.Item
       })
       start()
     }
+    animateCartButton(cartButton, true)
+  }
+  /**
+   * Animated Vector Drawable*/
+  private fun animateCartButton(cartButton: ImageView, morphToDone: Boolean){
+    cartButton.setImageResource(if (morphToDone) R.drawable.ic_morph else R.drawable.ic_morph_reverse)
+    val animatable = cartButton.drawable as Animatable
+    animatable.start()
   }
 
   /**
@@ -254,18 +270,16 @@ class ItemsActivity : AppCompatActivity(), ItemsContract.View, ItemsAdapter.Item
   }
 
   /**Animator Set*/
-  private fun animateItemCountCircle(){
+  private fun cartIconAnimatorSet(): AnimatorSet{
 
     val iconScaleAnimatorX = objectAnimatorOfFloatForCountCircle(itemCountCircle, View.SCALE_X,
             1f,1.5f)
     val iconScaleAnimatorY = objectAnimatorOfFloatForCountCircle(itemCountCircle, View.SCALE_Y,
             1f,1.5f)
 
-    AnimatorSet().apply {
-      play(iconScaleAnimatorX).with(iconScaleAnimatorY)
-      start()
-    }
-
+    val iconAnimatorSet = AnimatorSet()
+    iconAnimatorSet. play(iconScaleAnimatorX).with(iconScaleAnimatorY)
+    return  iconAnimatorSet
   }
 
 
