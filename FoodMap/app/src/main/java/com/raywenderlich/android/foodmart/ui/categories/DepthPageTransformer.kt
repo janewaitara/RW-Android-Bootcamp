@@ -17,24 +17,25 @@ class DepthPageTransformer: ViewPager.PageTransformer {
                 page.alpha = 0f
 
             position <= 0 -> { //(-1, 0)
-                //use the default slide transition when moving to the left
-                page.alpha = 1f
-                page.translationX = 0f
-                page.scaleY = 1f
-                page.scaleX = 1f
-            }
-
-            position <= 1 -> { //(0, 1)
                 //Fade the page out
-                page.alpha = 1f - position
+                page.alpha = 1f + position
 
                 //Counteract the default slide transition
                 page.translationX = pageWidth * -position
 
                 //scale the page down( between MIN_SCALE and 1)
-                val scaleFactor = MIN_SCALE * (1 - MIN_SCALE) * ( 1 - Math.abs(position))
+                val scaleFactor = MIN_SCALE + (1 - MIN_SCALE) * ( 1 - Math.abs(position))
                 page.scaleX = scaleFactor
                 page.scaleY = scaleFactor
+            }
+
+            position <= 1 -> { //(0, 1)
+                //use the default slide transition when moving to the left
+                page.alpha = 1f
+                page.translationX = 0f
+                page.scaleX = 1f
+                page.scaleY = 1f
+
 
             }
             else -> // (1, +infinity)
