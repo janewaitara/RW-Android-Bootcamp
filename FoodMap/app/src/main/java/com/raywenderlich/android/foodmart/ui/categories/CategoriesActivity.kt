@@ -75,5 +75,10 @@ class CategoriesActivity : AppCompatActivity(), CategoriesContract.View {
 
       override fun getPageTitle(position: Int) = categories[position]
     }
+    /**
+     * ZoomOutPageTransformer
+     *
+     * true -> causes the page draws to be done from last to first*/
+    viewPager.setPageTransformer(true, ZoomOutPageTransformer())
   }
 }

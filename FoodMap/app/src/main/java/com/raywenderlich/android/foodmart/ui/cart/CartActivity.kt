@@ -153,7 +153,8 @@ class CartActivity : AppCompatActivity(), CartContract.View, CartAdapter.CartAda
     animator.interpolator = AccelerateDecelerateInterpolator()//interpolator
     animator.start()
   }
-
+  /**
+   * Circular Reveal Animation to show the payment Container*/
   private fun animateShowPaymentMethodContainer(){
    /* paymentMethodContainer.visibility = View.VISIBLE
     animatePaymentMethodContainer(paymentMethodContainer.height.toFloat(), 0f)
@@ -167,6 +168,8 @@ class CartActivity : AppCompatActivity(), CartContract.View, CartAdapter.CartAda
 
   }
 
+  /**
+   * Circular Reveal Animation to hide the payment Container*/
   private fun animateHidePaymentMethodContainer(){
     /*animatePaymentMethodContainer(0f, paymentMethodContainer.height.toFloat())*/
 
