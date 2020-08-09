@@ -25,6 +25,18 @@
       android:src="@drawable/food_donut"
       app:layout_constraintBottom_toBottomOf="parent"
       app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="parent"
+     />
+
+  <ImageView
+      android:id="@+id/cookie"
+      android:layout_width="@dimen/donut_size"
+      android:layout_height="@dimen/donut_size"
+      android:layout_marginBottom="@dimen/donut_size"
+      android:contentDescription="@string/cookie"
+      android:src="@drawable/food_cookie"
+      app:layout_constraintBottom_toBottomOf="parent"
+      app:layout_constraintEnd_toEndOf="parent"
       app:layout_constraintStart_toStartOf="parent" />
 
 </android.support.constraint.ConstraintLayout>

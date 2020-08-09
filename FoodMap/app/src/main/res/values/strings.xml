@@ -19,6 +19,8 @@
   <string name="categories">Categories</string>
   <string name="close_payment_methods">Close Payment Methods</string>
   <string name="happy_monster">Happy Monster</string>
-    <string name="donut">donut</string>
-    <string name="free_donuts">FREE DONUTS!!!</string>
+  <string name="donut">donut</string>
+  <string name="free_donuts">FREE DONUTS!!!</string>
+  <string name="free_cookies">FREE COOKIES!!!</string>
+  <string name="cookie">cookie</string>
 </resources>
