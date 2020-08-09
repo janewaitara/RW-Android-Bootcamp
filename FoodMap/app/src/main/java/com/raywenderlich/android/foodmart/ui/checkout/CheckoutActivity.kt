@@ -46,6 +46,7 @@ class CheckoutActivity : AppCompatActivity() {
 
   //property to measure the x displacement
   private var xPositionDiff = 0f
+  private var yPositionDiff = 0f
 
   //SpringForce takes a final position in its constructor
   private  val springForce by lazy{
@@ -61,6 +62,10 @@ class CheckoutActivity : AppCompatActivity() {
   // which in this case is translationX for horizontal displacement
   private val springAnimationX: SpringAnimation by lazy {
     SpringAnimation(donut, DynamicAnimation.TRANSLATION_X).setSpring(springForce)
+  }
+
+  private val springAnimationY : SpringAnimation by lazy {
+    SpringAnimation(donut, DynamicAnimation.TRANSLATION_Y).setSpring(springForce)
   }
 
   companion object {
@@ -86,15 +91,19 @@ class CheckoutActivity : AppCompatActivity() {
         MotionEvent.ACTION_DOWN -> {
 
           xPositionDiff = motionEvent.rawX - view.x
+          yPositionDiff = motionEvent.rawY - view.y
           springAnimationX.cancel()
+          springAnimationY.cancel()
         }
 
         MotionEvent.ACTION_MOVE-> {
           donut.x = motionEvent.rawX - xPositionDiff
+          donut.y = motionEvent.rawY - yPositionDiff
         }
 
         MotionEvent.ACTION_UP  -> {
           springAnimationX.start()
+          springAnimationY.start()
         }
       }
       true
