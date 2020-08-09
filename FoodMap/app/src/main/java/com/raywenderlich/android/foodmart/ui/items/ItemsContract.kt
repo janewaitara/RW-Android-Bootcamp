@@ -48,5 +48,7 @@ interface ItemsContract {
     fun clearCart()
     fun removeItem(item: Food)
     fun addItem(item: Food)
+    fun removeFavorite(item: Food)
+    fun addFavorite(item: Food)
   }
 }

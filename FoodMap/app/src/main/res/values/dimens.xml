@@ -16,4 +16,5 @@
   <dimen name="empty_state_text_size">24sp</dimen>
   <dimen name="payment_method_size">100dp</dimen>
   <dimen name="payment_method_container_height">160dp</dimen>
+    <dimen name="fave_size">48dp</dimen>
 </resources>

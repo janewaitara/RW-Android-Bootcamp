@@ -32,4 +32,8 @@ dependencies {
   implementation 'com.android.support.constraint:constraint-layout:1.0.2'
   implementation 'com.google.code.gson:gson:2.8.1'
   implementation 'org.greenrobot:eventbus:3.1.1'
+
+  //lottie animation dependency
+  implementation 'com.airbnb.android:lottie:2.3.0'
+
 }

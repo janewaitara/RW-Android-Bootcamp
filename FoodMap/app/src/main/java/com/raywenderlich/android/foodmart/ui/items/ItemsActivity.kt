@@ -229,6 +229,14 @@ class ItemsActivity : AppCompatActivity(), ItemsContract.View, ItemsAdapter.Item
 
   }
 
+  override fun removeFavorite(item: Food) {
+    presenter.removeFavorite(item)
+  }
+
+  override fun addFavorite(item: Food) {
+    presenter.addFavorite(item)
+  }
+
   //get position of helper
   private fun getPositionOf(view: View?): IntArray{
     val position = intArrayOf(0, 0)
