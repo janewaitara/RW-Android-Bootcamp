@@ -87,6 +87,8 @@ class ItemsAdapter(private val items: MutableList<Food>, private val listener: I
       itemView.faveButton.setOnClickListener {
         if (item.isFavorite){
           listener.removeFavorite(item)
+          /**
+           * Lottie animation*/
           playReverseFavoriteAnimation(itemView.faveButton)
         }else {
           listener.addFavorite(item)

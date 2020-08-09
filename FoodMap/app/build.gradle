@@ -36,4 +36,7 @@ dependencies {
   //lottie animation dependency
   implementation 'com.airbnb.android:lottie:2.3.0'
 
+  //physics based animation
+  implementation "com.android.support:support-dynamic-animation:$support_lib_version"
+
 }

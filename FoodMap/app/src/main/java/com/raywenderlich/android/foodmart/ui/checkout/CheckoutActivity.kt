@@ -34,10 +34,34 @@ package com.raywenderlich.android.foodmart.ui.checkout
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.support.animation.DynamicAnimation
+import android.support.animation.SpringAnimation
+import android.support.animation.SpringForce
 import android.support.v7.app.AppCompatActivity
+import android.view.MotionEvent
 import com.raywenderlich.android.foodmart.R
+import kotlinx.android.synthetic.main.activity_checkout.*
 
 class CheckoutActivity : AppCompatActivity() {
+
+  //property to measure the x displacement
+  private var xPositionDiff = 0f
+
+  //SpringForce takes a final position in its constructor
+  private  val springForce by lazy{
+    SpringForce(0f).apply{
+      stiffness = SpringForce.STIFFNESS_LOW
+      dampingRatio = SpringForce.DAMPING_RATIO_HIGH_BOUNCY
+    }
+  }
+  /**
+   * Physics Based animation:
+   *    Spring Animation*/
+  //Spring Animation constructor takes an object to act on and an associated property
+  // which in this case is translationX for horizontal displacement
+  private val springAnimationX: SpringAnimation by lazy {
+    SpringAnimation(donut, DynamicAnimation.TRANSLATION_X).setSpring(springForce)
+  }
 
   companion object {
     fun newIntent(context: Context) = Intent(context, CheckoutActivity::class.java)
@@ -48,5 +72,32 @@ class CheckoutActivity : AppCompatActivity() {
     setContentView(R.layout.activity_checkout)
 
     title = getString(R.string.checkout_title)
+
+    setupTouchListener()
+  }
+
+  //respond to a user's touch to start the animation by setting up a touch listener on the donut
+  private fun setupTouchListener(){
+
+    donut.setOnTouchListener { view, motionEvent ->
+
+      when(motionEvent?.action){
+
+        MotionEvent.ACTION_DOWN -> {
+
+          xPositionDiff = motionEvent.rawX - view.x
+          springAnimationX.cancel()
+        }
+
+        MotionEvent.ACTION_MOVE-> {
+          donut.x = motionEvent.rawX - xPositionDiff
+        }
+
+        MotionEvent.ACTION_UP  -> {
+          springAnimationX.start()
+        }
+      }
+      true
+    }
   }
 }
